@@ -1,0 +1,38 @@
+# Python specific
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# Django specific
+*.log
+db.sqlite3
+media/
+
+# Migrations stuff
+*migrations*
+*/migrations/*
+
+**/migrations/*.py
+**/migrations/*.pyc
+**/migrations/__pycache__/
+
+*/migrations/*.py
+*/migrations/*.pyc
+*/migrations/__pycache__/
+
+# Development and IDE specific
+.vscode/
+.idea/
+
+# System specific (e.g., macOS)
+.DS_Store
+
+# Environment and dependency files
+/venv
+venv/
+env/
+.venv
+/.venv
+*.env
+*.env.*
