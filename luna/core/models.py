@@ -51,7 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(db_index=True, unique=True, max_length=254)
     first_name = models.CharField(max_length=240)
     last_name = models.CharField(max_length=255)
-
+    is_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=True)
     # must needed, otherwise you won't be able to loginto django-admin.
     is_active = models.BooleanField(default=True)
@@ -106,4 +106,3 @@ class StudentUser(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
-
