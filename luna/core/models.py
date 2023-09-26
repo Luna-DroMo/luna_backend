@@ -23,7 +23,7 @@ class CustomUserManager(BaseUserManager):
             email=self.normalize_email(email),
             first_name=first_name,
             last_name=last_name,
-            **extra_fields
+            **extra_fields,
         )
 
         user.set_password(password)
@@ -75,3 +75,35 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.user_type == User.UserType.STUDENT:
+            # Create a StudentUser instance
+            student_user, created = StudentUser.objects.get_or_create(
+                user=self,
+                defaults={
+                    "first_name": self.first_name,
+                    "last_name": self.last_name,
+                    # Add other fields as needed
+                },
+            )
+
+
+class StudentUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    # user_id = models.IntegerField(primary_key=True)
+    first_name = models.CharField(max_length=50)
+    middle_name = models.CharField(max_length=50, blank=True, null=True)
+    last_name = models.CharField(max_length=50)
+    nickname = models.CharField(max_length=50, null=True)
+    birth_date = models.DateField(null=True)
+    primary_university_student_id = models.CharField(max_length=20, null=True)
+    secondary_university_student_id = models.CharField(
+        max_length=20, blank=True, null=True
+    )
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
