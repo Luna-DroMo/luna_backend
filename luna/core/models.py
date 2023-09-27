@@ -63,9 +63,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         STUDENT = 1
         LECTURER = 2
         ADMIN = 3
-        OTHER = 4  # Keeping this for any future needs
+        OTHER = 4  # Keeping this for default behaviour
 
-    user_type = models.IntegerField(choices=UserType.choices)
+    user_type = models.IntegerField(choices=UserType.choices, default=4)
 
     objects = CustomUserManager()
 
