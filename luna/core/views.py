@@ -99,9 +99,21 @@ def get_users(request):
 
 # Retrieve a specific student user by ID:
 @api_view(["GET"])
-def get_studentuser(request, pk):
+def get_studentuser_with_pk(request, pk):
     try:
         studentuser = StudentUser.objects.get(pk=pk)
+    except StudentUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "GET":
+        serializer = StudentUserSerializer(studentuser)
+        return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_studentuser_with_email(request, email):
+    try:
+        studentuser = StudentUser.objects.get(email=email)
     except StudentUser.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -126,7 +138,6 @@ def update_studentuser_with_email(request, email):
         )
         if serializer.is_valid():
             serializer.save()
-            print(request.data)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -147,7 +158,6 @@ def update_studentuser_with_PK(request, pk):
         )
         if serializer.is_valid():
             serializer.save()
-            print(request.data)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -194,6 +204,17 @@ def update_user_with_email(request, email):
         )
         if serializer.is_valid():
             serializer.save()
-            print(request.data)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+def get_user_with_email(request, email):
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "GET":
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
