@@ -14,8 +14,10 @@ from .serializers import UserSerializer, StudentUserSerializer
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from .models import User, StudentUser
-
+from .email import send_otp_via_email
 from django.shortcuts import get_object_or_404
+
+from django.contrib.auth import get_user_model
 
 
 # Create your views here.
@@ -27,10 +29,14 @@ def login(request):
             {"detail": "Not found."},
             status=status.HTTP_404_NOT_FOUND,
         )
-    token, created = Token.objects.get_or_create(user=user)
+    token, _ = Token.objects.get_or_create(user=user)
     serializer = UserSerializer(instance=user)
-    return Response({"token": token.key, "user": serializer.data})
-    # return Response({})
+    return Response(
+        {
+            "token": token.key,
+            "user": serializer.data,
+        }
+    )
 
 
 @api_view(["POST"])
@@ -47,12 +53,25 @@ def signup(request):
         user.set_password(request.data["password"])
         user.save()
         token = Token.objects.create(user=user)
-        return Response({"token": token.key, "user": serializer.data})
+        return Response(
+            {
+                "token": token.key,
+                "user": serializer.data,
+                "otp": send_otp_via_email(email=request.data["email"]),
+            }
+        )
     return Response(
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST,
     )
-    # return Response({})
+
+
+def resend_email(request):
+    return Response(
+        {
+            "otp": send_otp_via_email(email=request.data["email"]),
+        }
+    )
 
 
 @api_view(["GET"])
@@ -60,7 +79,6 @@ def signup(request):
 @permission_classes([IsAuthenticated])
 def test_token(request):
     return Response("passed!")
-    # return Response({})
 
 
 @api_view(["GET"])
@@ -94,7 +112,28 @@ def get_studentuser(request, pk):
 
 # Update the information of a student user
 @api_view(["PATCH"])
-def update_studentuser(request, pk):
+def update_studentuser_with_email(request, email):
+    try:
+        studentuser = StudentUser.objects.get(email=email)
+    except StudentUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "PATCH":
+        serializer = StudentUserSerializer(
+            studentuser,
+            data=request.data,
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+            print(request.data)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Update the information of a student user
+@api_view(["PATCH"])
+def update_studentuser_with_PK(request, pk):
     try:
         studentuser = StudentUser.objects.get(pk=pk)
     except StudentUser.DoesNotExist:
@@ -115,7 +154,7 @@ def update_studentuser(request, pk):
 
 # Delete a student user
 @api_view(["DELETE"])
-def delete_studentuser(request, pk):
+def delete_studentuser_with_pk(request, pk):
     try:
         studentuser = StudentUser.objects.get(pk=pk)
     except StudentUser.DoesNotExist:
@@ -124,3 +163,37 @@ def delete_studentuser(request, pk):
     if request.method == "DELETE":
         studentuser.delete()
         return Response({"status": "Deleted"}, status=status.HTTP_200_OK)
+
+
+# Delete a student user
+@api_view(["DELETE"])
+def delete_studentuser_with_email(request, email):
+    try:
+        studentuser = StudentUser.objects.get(email=email)
+    except StudentUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "DELETE":
+        studentuser.delete()
+        return Response({"status": "Deleted"}, status=status.HTTP_200_OK)
+
+
+# Update the information of a user
+@api_view(["PATCH"])
+def update_user_with_email(request, email):
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "PATCH":
+        serializer = UserSerializer(
+            user,
+            data=request.data,
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+            print(request.data)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

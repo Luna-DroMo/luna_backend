@@ -17,15 +17,35 @@ urlpatterns = [
         name="get_studentuser",
     ),
     path(
-        "users/update_studentuser/<int:pk>/",
-        views.update_studentuser,
-        name="update_studentuser",
+        "users/update_studentuser_with_PK/<int:pk>/",
+        views.update_studentuser_with_PK,
+        name="update_studentuser_with_PK",
     ),
     path(
-        "users/delete_studentuser/<int:pk>/",
-        views.delete_studentuser,
-        name="delete_studentuser",
+        "users/update_studentuser_with_email/<str:email>/",
+        views.update_studentuser_with_email,
+        name="update_studentuser_with_email",
+    ),
+    path(
+        "users/delete_studentuser_with_pk/<int:pk>/",
+        views.delete_studentuser_with_pk,
+        name="delete_studentuser_with_pk",
+    ),
+    path(
+        "users/delete_studentuser_with_email/<str:email>/",
+        views.delete_studentuser_with_email,
+        name="delete_studentuser_with_email",
     ),
     # all the CRUD operations for all users
+    path(
+        "users/update_user_with_email/<str:email>/",
+        views.update_user_with_email,
+        name="update_user_with_email",
+    ),
+    # path(
+    #     "users/delete_user_with_email/<str:email>/",
+    #     views.delete_user_with_email,
+    #     name="delete_user_with_email",
+    # ),
     re_path("users/get_all_users", views.get_users),
 ]

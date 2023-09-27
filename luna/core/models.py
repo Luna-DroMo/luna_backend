@@ -49,8 +49,8 @@ class CustomUserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     # Abstractbaseuser has password, last_login, is_active by default
     email = models.EmailField(db_index=True, unique=True, max_length=254)
-    first_name = models.CharField(max_length=240)
-    last_name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=240, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=True)
     # must needed, otherwise you won't be able to loginto django-admin.
@@ -91,12 +91,16 @@ class User(AbstractBaseUser, PermissionsMixin):
             )
 
 
+# RIGHT NOW USER AND STUDENT USER HAVE REDUNDANT FIELDS. I HAVE DONE THIS DELIBERATELY, IN ORDER TO WRITE EFFICIENT CODE AND THEN LATER REMOVE REDUNDANCY ON A NEED BASED SYSTEM.
 class StudentUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     # user_id = models.IntegerField(primary_key=True)
-    first_name = models.CharField(max_length=50)
+    email = models.EmailField(
+        max_length=254, db_index=True, unique=True
+    )  # Add this field
+    first_name = models.CharField(max_length=50, blank=True, null=True)
     middle_name = models.CharField(max_length=50, blank=True, null=True)
-    last_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50, blank=True, null=True)
     nickname = models.CharField(max_length=50, null=True)
     birth_date = models.DateField(null=True)
     primary_university_student_id = models.CharField(max_length=20, null=True)
@@ -106,3 +110,8 @@ class StudentUser(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+    def save(self, *args, **kwargs):
+        # Automatically populate the email field from the associated User instance
+        self.email = self.user.email
+        super().save(*args, **kwargs)
