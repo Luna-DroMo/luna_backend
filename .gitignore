@@ -29,6 +29,11 @@ media/
 .DS_Store
 
 # Environment and dependency files
+/virtualenv/
+virtualenv/
+.virtualenv/
+*virtualenv*
+
 /venv
 venv/
 env/
