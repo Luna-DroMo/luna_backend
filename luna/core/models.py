@@ -47,23 +47,18 @@ class CustomUserManager(BaseUserManager):
 
 # Create your User Model here.
 class User(AbstractBaseUser, PermissionsMixin):
-    # Abstractbaseuser has password, last_login, is_active by default
     email = models.EmailField(db_index=True, unique=True, max_length=254)
     first_name = models.CharField(max_length=240, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=True)
-    # must needed, otherwise you won't be able to loginto django-admin.
     is_active = models.BooleanField(default=True)
-    # must needed, otherwise you won't be able to loginto django-admin.
     is_superuser = models.BooleanField(default=False)
-    # this field we inherit from PermissionsMixin.
 
     class UserType(models.IntegerChoices):
         STUDENT = 1
         LECTURER = 2
         ADMIN = 3
-        OTHER = 4  # Keeping this for default behaviour
 
     user_type = models.IntegerField(choices=UserType.choices, default=4)
 
@@ -91,9 +86,15 @@ class User(AbstractBaseUser, PermissionsMixin):
             )
 
 
-# RIGHT NOW USER AND STUDENT USER HAVE REDUNDANT FIELDS. I HAVE DONE THIS DELIBERATELY, IN ORDER TO WRITE EFFICIENT CODE AND THEN LATER REMOVE REDUNDANCY ON A NEED BASED SYSTEM.
 class StudentUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+
+    class UserLanguages(models.TextChoices):
+        EN = "EN", "English"
+        DE = "DE", "German"
+        OTHER = "OTHER", "Other"
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, primary_key=True)
     # user_id = models.IntegerField(primary_key=True)
     email = models.EmailField(
         max_length=254, db_index=True, unique=True
@@ -103,10 +104,9 @@ class StudentUser(models.Model):
     last_name = models.CharField(max_length=50, blank=True, null=True)
     nickname = models.CharField(max_length=50, null=True)
     birth_date = models.DateField(null=True)
-    primary_university_student_id = models.CharField(max_length=20, null=True)
-    secondary_university_student_id = models.CharField(
-        max_length=20, blank=True, null=True
-    )
+    abitur_note = models.IntegerField(null=True)
+    main_language = models.CharField(choices=UserLanguages.choices)
+    financial_support = models.BooleanField()
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -115,3 +115,41 @@ class StudentUser(models.Model):
         # Automatically populate the email field from the associated User instance
         self.email = self.user.email
         super().save(*args, **kwargs)
+
+
+# This is for form table, we are going to connect this one with Form
+class Form(models.Model):
+    class FormType(models.TextChoices):
+        EQ = 'EQ', 'EQ'
+        IQ = 'IQ', 'IQ'
+
+    class ResolutionStatus(models.TextChoices):
+        DONE = 'COMPLETED', 'Completed'
+        ONGOING = 'NOT_COMPLETED', 'Not Completed'
+
+    name = models.CharField(max_length=255)
+    content = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Adjust this if User is in a different file
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    form_type = models.CharField(
+        max_length=50,
+        choices=FormType.choices,
+        default=FormType.EQ
+    )
+    resolution = models.CharField(
+        max_length=20,
+        choices=ResolutionStatus.choices,
+        default=ResolutionStatus.ONGOING
+    )
+
+
+# This is for module table, survey part is not in here, we will connect it later.
+class Module(models.Model):
+    id = models.CharField(max_length=10, unique=True, primary_key=True)
+    title = models.CharField(max_length=255)
+    student_user = models.ForeignKey(
+        StudentUser, related_name='modules', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.module_id} - {self.title}"
