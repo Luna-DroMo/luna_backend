@@ -1,7 +1,5 @@
 from django.urls import path
-
 from . import views
-
 
 urlpatterns = [
     path("hello", views.hello_world, name="hello"),
@@ -12,7 +10,12 @@ urlpatterns = [
     ),
     path("student/<int:id>/modules",
          views.get_student_modules, name="get_student_modules"),
-    path("handle_post", views.handle_post, name="handle_post")
+    path("handle_post", views.handle_post, name="handle_post"),
+    path(
+        "get_all_studentusers",
+        views.get_studentusers,
+        name="get_all_studentusers",
+    ),
 ]
 
 # urlpatterns = [  # all the CRUD operations for student users

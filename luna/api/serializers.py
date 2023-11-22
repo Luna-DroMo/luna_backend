@@ -21,6 +21,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
         return instance
 
 
+# This one is for module serializer. Since it has built-in support for create update, now no need to add them.
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module

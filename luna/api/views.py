@@ -66,12 +66,12 @@ def get_student_modules(request, id):
     return Response(serializer.data)
 
 
-# @api_view(["GET"])
-# def get_studentusers(request):
-#     if request.method == "GET":
-#         queryset = StudentUser.objects.all()
-#         serializer = StudentUserSerializer(queryset, many=True)
-#         return Response(serializer.data)
+@api_view(["GET"])
+def get_studentusers(request):
+    if request.method == "GET":
+        queryset = StudentUser.objects.all()
+        serializer = StudentUserSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 # @api_view(["GET"])
@@ -107,24 +107,24 @@ def get_student_modules(request, id):
         return Response(serializer.data)
 
 
-# # Update the information of a student user
-# @api_view(["PATCH"])
-# def update_studentuser_with_email(request, email):
-#     try:
-#         studentuser = StudentUser.objects.get(email=email)
-#     except StudentUser.DoesNotExist:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
+# Update the information of a student user
+@api_view(["PATCH"])
+def update_studentuser_with_email(request, email):
+    try:
+        studentuser = StudentUser.objects.get(email=email)
+    except StudentUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-#     if request.method == "PATCH":
-#         serializer = StudentUserSerializer(
-#             studentuser,
-#             data=request.data,
-#             partial=True,
-#         )
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == "PATCH":
+        serializer = StudentUserSerializer(
+            studentuser,
+            data=request.data,
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # # Delete a student user
