@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from core.serializers import UserSerializer, StudentUserSerializer
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from core.models import StudentUser, Module
+from core.models import StudentUser, Module, StudentModule
 from django.shortcuts import get_object_or_404
 from .serializers import ModuleSerializer
 import json
@@ -54,14 +54,16 @@ def update_studentuser_with_id(request, pk):
 
 
 @api_view(['GET'])
-def get_student_modules(request, id):
-    try:
-        student_user = StudentUser.objects.get(pk=id)
-    except StudentUser.DoesNotExist:
-        return Response({"message": "There is no user with this id"}, status=404)
+def get_student_modules(request, student_id):
+   # Ensure the student exists
+    get_object_or_404(StudentUser, pk=student_id)
+    # Retrieve modules related to the student
+    student_modules = StudentModule.objects.filter(
+        student=student_id).select_related('module')
+    print(student_modules)
+    modules = [sm.module for sm in student_modules]
 
-    # If the StudentUser exists, then retrieve their modules
-    modules = Module.objects.filter(student_user=student_user)
+    # Serialize the module data
     serializer = ModuleSerializer(modules, many=True)
     return Response(serializer.data)
 
@@ -73,30 +75,6 @@ def get_studentusers(request):
         serializer = StudentUserSerializer(queryset, many=True)
         return Response(serializer.data)
 
-
-# @api_view(["GET"])
-# def get_users(request):
-#     if request.method == "GET":
-#         queryset = User.objects.all()
-#         serializer = UserSerializer(queryset, many=True)
-#         return Response(serializer.data)
-
-
-# # Retrieve a specific student user by ID:
-# @api_view(["GET"])
-# def get_studentuser_with_pk(request, pk):
-#     try:
-#         studentuser = StudentUser.objects.get(pk=pk)
-#     except StudentUser.DoesNotExist:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-
-#     if request.method == "GET":
-#         serializer = StudentUserSerializer(studentuser)
-#         return Response(serializer.data)
-
-
-# @api_view(["GET"])
-# def get_studentuser_with_email(request, email):
     try:
         studentuser = StudentUser.objects.get(email=email)
     except StudentUser.DoesNotExist:
@@ -125,61 +103,3 @@ def update_studentuser_with_email(request, email):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# # Delete a student user
-# @api_view(["DELETE"])
-# def delete_studentuser_with_pk(request, pk):
-#     try:
-#         studentuser = StudentUser.objects.get(pk=pk)
-#     except StudentUser.DoesNotExist:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-
-#     if request.method == "DELETE":
-#         studentuser.delete()
-#         return Response({"status": "Deleted"}, status=status.HTTP_200_OK)
-
-
-# # Delete a student user
-# @api_view(["DELETE"])
-# def delete_studentuser_with_email(request, email):
-#     try:
-#         studentuser = StudentUser.objects.get(email=email)
-#     except StudentUser.DoesNotExist:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-
-#     if request.method == "DELETE":
-#         studentuser.delete()
-#         return Response({"status": "Deleted"}, status=status.HTTP_200_OK)
-
-
-# # Update the information of a user
-# @api_view(["PATCH"])
-# def update_user_with_email(request, email):
-#     try:
-#         user = User.objects.get(email=email)
-#     except User.DoesNotExist:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-
-#     if request.method == "PATCH":
-#         serializer = UserSerializer(
-#             user,
-#             data=request.data,
-#             partial=True,
-#         )
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# @api_view(["GET"])
-# def get_user_with_email(request, email):
-    # try:
-    #     user = User.objects.get(email=email)
-    # except User.DoesNotExist:
-    #     return Response(status=status.HTTP_404_NOT_FOUND)
-
-    # if request.method == "GET":
-    #     serializer = UserSerializer(user)
-    #     return Response(serializer.data)

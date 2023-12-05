@@ -27,7 +27,7 @@ def login(request):
     if not user.check_password(request.data["password"]):
         return Response(
             {"detail": "Not found."},
-            status=status.HTTP_404_NOT_FOUND,
+            status=status.HTTP_401_UNAUTHORIZED,
         )
     token, _ = Token.objects.get_or_create(user=user)
     serializer = UserSerializer(instance=user)
@@ -57,9 +57,10 @@ def signup(request):
             {
                 "token": token.key,
                 "user": serializer.data,
-                "otp": send_otp_via_email(email=request.data["email"]),
+                # "otp": send_otp_via_email(email=request.data["email"]),
             }
         )
+    print(serializer.errors)
     return Response(
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST,

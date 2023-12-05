@@ -25,4 +25,4 @@ class StudentUserSerializer(serializers.ModelSerializer):
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
-        fields = ['module_id', 'title', 'survey_status', 'next_survey_date']
+        fields = ['resource_id', 'title']

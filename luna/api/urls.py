@@ -8,7 +8,7 @@ urlpatterns = [
         views.update_studentuser_with_id,
         name="update_studentuser_with_PK",
     ),
-    path("student/<int:id>/modules",
+    path("student/<int:student_id>/modules",
          views.get_student_modules, name="get_student_modules"),
     path("handle_post", views.handle_post, name="handle_post"),
     path(

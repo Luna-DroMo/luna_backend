@@ -105,8 +105,9 @@ class StudentUser(models.Model):
     nickname = models.CharField(max_length=50, null=True)
     birth_date = models.DateField(null=True)
     abitur_note = models.IntegerField(null=True)
-    main_language = models.CharField(choices=UserLanguages.choices)
-    financial_support = models.BooleanField()
+    main_language = models.CharField(
+        choices=UserLanguages.choices, null=True)
+    financial_support = models.BooleanField(null=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -144,12 +145,35 @@ class Form(models.Model):
     )
 
 
-# This is for module table, survey part is not in here, we will connect it later.
 class Module(models.Model):
-    id = models.CharField(max_length=10, unique=True, primary_key=True)
-    title = models.CharField(max_length=255)
-    student_user = models.ForeignKey(
-        StudentUser, related_name='modules', on_delete=models.CASCADE)
+    resource_id = models.CharField(max_length=10, null=True, unique=True)
+    instructor = models.CharField(max_length=255, null=True)
+    title = models.CharField(max_length=255, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    next_survey_date = models.DateField(blank=True, null=True)
+    image = models.ImageField(upload_to='images/')
 
     def __str__(self):
-        return f"{self.module_id} - {self.title}"
+        return f"{self.title} ({self.resource_id})"
+
+
+class StudentModule(models.Model):
+
+    class SurveyStatus(models.TextChoices):
+        NOT_STARTED = 'Not Started'
+        COMPLETED = 'COMPLETED'
+
+    student = models.ForeignKey('StudentUser', on_delete=models.CASCADE)
+    module = models.ForeignKey('Module', on_delete=models.CASCADE)
+    survey_status = models.CharField(
+        max_length=20,
+        choices=SurveyStatus.choices,
+        default=SurveyStatus.NOT_STARTED,
+        null=True
+    )
+
+    class Meta:
+        unique_together = ('student', 'module')
+
+    def __str__(self):
+        return f"{self.student} {self.module}"
