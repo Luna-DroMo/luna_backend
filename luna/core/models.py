@@ -149,9 +149,9 @@ class Module(models.Model):
     resource_id = models.CharField(max_length=10, null=True, unique=True)
     instructor = models.CharField(max_length=255, null=True)
     title = models.CharField(max_length=255, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    next_survey_date = models.DateField(blank=True, null=True)
-    image = models.ImageField(upload_to='images/')
+    # created_at = models.DateTimeField(auto_now_add=True, null=True)
+    # next_survey_date = models.DateField(blank=True, null=True)
+    # image = models.ImageField(upload_to='images/')
 
     def __str__(self):
         return f"{self.title} ({self.resource_id})"
@@ -165,12 +165,12 @@ class StudentModule(models.Model):
 
     student = models.ForeignKey('StudentUser', on_delete=models.CASCADE)
     module = models.ForeignKey('Module', on_delete=models.CASCADE)
-    survey_status = models.CharField(
-        max_length=20,
-        choices=SurveyStatus.choices,
-        default=SurveyStatus.NOT_STARTED,
-        null=True
-    )
+    # survey_status = models.CharField(
+    #     max_length=20,
+    #     choices=SurveyStatus.choices,
+    #     default=SurveyStatus.NOT_STARTED,
+    #     null=True
+    # )
 
     class Meta:
         unique_together = ('student', 'module')
