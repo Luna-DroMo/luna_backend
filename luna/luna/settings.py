@@ -29,7 +29,7 @@ SECRET_KEY = "django-insecure-b8v7bts76!zjv(ts#s!c_emtn%=t!n3a2qbtv)^$fy8va=+ehp
 DEBUG = True
 
 ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1",
-                 "localhost", "luna-dev.azurewebsites.net"]
+                 "localhost", "luna-dev.azurewebsites.net", "luna-development.azurewebsites.net"]
 
 
 # Application definition
