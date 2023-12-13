@@ -14,22 +14,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the project code into the container
 COPY . .
 
-WORKDIR /app/luna
-
-# Run migrations and collect static files
-RUN python manage.py makemigrations
-RUN python manage.py migrate
-
-# Create Superuser
-# ENV DJANGO_SUPERUSER_USERNAME=Dromo
-# ENV DJANGO_SUPERUSER_EMAIL=dromo@gmail.com
-# ENV DJANGO_SUPERUSER_PASSWORD=Test@1232
-
-# CMD python manage.py createsuperuser --no-input || true && python manage.py runserver 0.0.0.0:8000
-
+# Copy the entrypoint script and make it executable
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Expose the application port
 EXPOSE 8000
 
-# Start the Django development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Start the application using the entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]

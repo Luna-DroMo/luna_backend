@@ -10,16 +10,6 @@ db.sqlite3
 media/
 
 # Migrations stuff
-*migrations*
-*/migrations/*
-
-**/migrations/*.py
-**/migrations/*.pyc
-**/migrations/__pycache__/
-
-*/migrations/*.py
-*/migrations/*.pyc
-*/migrations/__pycache__/
 
 # Development and IDE specific
 .vscode/
@@ -41,3 +31,4 @@ env/
 /.venv
 *.env
 *.env.*
+.azure
