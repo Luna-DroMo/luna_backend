@@ -1,24 +1,19 @@
 from rest_framework.decorators import (
     api_view,
-    authentication_classes,
-    permission_classes,
 )
-from rest_framework.authentication import (
-    SessionAuthentication,
-    TokenAuthentication,
-)
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from .serializers import UserSerializer, StudentUserSerializer
+from .serializers import UserSerializer
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from .models import User, StudentUser
-from .email import send_otp_via_email
+from .models import User
 from django.shortcuts import get_object_or_404
 
 
 # Create your views here.
+
+@api_view(["GET"])
+def test(request):
+    return Response({"Test": "Success"})
 
 
 @api_view(["POST"])
@@ -65,18 +60,3 @@ def signup(request):
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST,
     )
-
-
-# def resend_email(request):
-#     return Response(
-#         {
-#             "otp": send_otp_via_email(email=request.data["email"]),
-#         }
-#     )
-
-
-# @api_view(["GET"])
-# @authentication_classes([SessionAuthentication, TokenAuthentication])
-# @permission_classes([IsAuthenticated])
-# def test_token(request):
-#     return Response("passed!")

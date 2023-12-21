@@ -89,11 +89,11 @@ WSGI_APPLICATION = "luna.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DATABASE_NAME"),
-        "USER": config("DATABASE_USER"),
+        "NAME": config("PGDATABASE"),
+        "USER": config("PGUSER"),
         "PASSWORD": config("DATABASE_PASSWORD"),
-        "HOST": config("DATABASE_HOST"),
-        "PORT": config("DATABASE_PORT"),
+        "HOST": config("PGHOST"),
+        "PORT": config("PGPORT"),
         "OPTIONS": {"sslmode": config("DATABASE_SSL_MODE")},
     }
 }
