@@ -29,7 +29,7 @@ SECRET_KEY = "django-insecure-b8v7bts76!zjv(ts#s!c_emtn%=t!n3a2qbtv)^$fy8va=+ehp
 DEBUG = False
 
 ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1",
-                 "localhost", "luna-backend.azurewebsites.net", "luna-development.azurewebsites.net"]
+                 "localhost", "https://ca-luna-jotavkykpjya4.blackhill-eeefbf10.germanywestcentral.azurecontainerapps.io"]
 
 
 # Application definition
