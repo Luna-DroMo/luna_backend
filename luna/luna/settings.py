@@ -26,10 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-b8v7bts76!zjv(ts#s!c_emtn%=t!n3a2qbtv)^$fy8va=+ehp"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1",
-                 "localhost", "luna-dev.azurewebsites.net", "luna-development.azurewebsites.net"]
+                 "localhost", "luna-backend.azurewebsites.net", "luna-development.azurewebsites.net"]
 
 
 # Application definition
@@ -89,12 +89,11 @@ WSGI_APPLICATION = "luna.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("PGDATABASE"),
-        "USER": config("PGUSER"),
+        "NAME": config("DATABASE_NAME"),
+        "USER": config("DATABASE_USER"),
         "PASSWORD": config("DATABASE_PASSWORD"),
-        "HOST": config("PGHOST"),
-        "PORT": config("PGPORT"),
-        "OPTIONS": {"sslmode": config("DATABASE_SSL_MODE")},
+        "HOST": config("DATABASE_HOST"),
+        "PORT": config("DATABASE_PORT"),
     }
 }
 
