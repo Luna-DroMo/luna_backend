@@ -7,9 +7,12 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from .models import User
 from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 
 
-# Create your views here.
+def landing(request):
+    return render(request, 'core/index.html')
+
 
 @api_view(["GET"])
 def test(request):

@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-b8v7bts76!zjv(ts#s!c_emtn%=t!n3a2qbtv)^$fy8va=+ehp"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1",
                  "localhost", "https://ca-luna-jotavkykpjya4.blackhill-eeefbf10.germanywestcentral.azurecontainerapps.io"]
@@ -67,7 +67,7 @@ ROOT_URLCONF = "luna.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        'DIRS': [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
