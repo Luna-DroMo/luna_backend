@@ -28,9 +28,7 @@ SECRET_KEY = "django-insecure-b8v7bts76!zjv(ts#s!c_emtn%=t!n3a2qbtv)^$fy8va=+ehp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1",
-                 "localhost", "https://ca-luna-jotavkykpjya4.blackhill-eeefbf10.germanywestcentral.azurecontainerapps.io"]
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -87,13 +85,13 @@ WSGI_APPLICATION = "luna.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("PGNAME"),
-        "USER": config("PGUSER"),
-        "PASSWORD": config("PGPASSWORD"),
-        "HOST": config("PGHOST"),
-        "PORT": config("PGPORT"),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('PGNAME', 'postgres'),
+        'USER': os.getenv('PGUSER'),
+        'PASSWORD': os.getenv('PGPASSWORD'),
+        'HOST': os.getenv('PGHOST'),  # Use the service name
+        'PORT': '5432',
     }
 }
 
