@@ -5,7 +5,7 @@ param tags object = {}
 param keyVaultName string
 
 param databaseUser string = 'psqladmin'
-param databaseName string = 'luna-db'
+param databaseName string = 'db'
 @secure()
 param databasePassword string
 
