@@ -21,9 +21,6 @@ RUN chmod +x /entrypoint.sh
 # Change the working directory to /app/luna
 WORKDIR /app/luna
 
-# RUN python3 manage.py makemigrations
-# RUN python3 manage.py migrate
-
 EXPOSE 8000
 
 # Start the application using the entrypoint script
