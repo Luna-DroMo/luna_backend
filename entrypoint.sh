@@ -14,5 +14,5 @@ python3 manage.py makemigrations
 python3 manage.py migrate
 
 # Start the Django server
-python3 manage.py runserver 0.0.0.0:80
+python3 manage.py runserver 0.0.0.0:8000
 
