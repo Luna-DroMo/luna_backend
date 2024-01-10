@@ -23,14 +23,14 @@ jobs:
       uses: docker/login-action@v2
       with:
         registry: https://index.docker.io/v1/
-        username: ${{ secrets.AzureAppService_ContainerUsername_ea168a39114b49bab30f5fc497b5bcb8 }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_64be5e0493264a4c9311b2b2bec7f10f }}
+        username: ${{ secrets.AzureAppService_ContainerUsername_e4d3f41fdbac4297acc26ce1e833a6d5 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_62340bdfe35848c985fa15e32931f6b1 }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_ea168a39114b49bab30f5fc497b5bcb8 }}/caodoe/luna_backend-web:${{ github.sha }}
+        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_e4d3f41fdbac4297acc26ce1e833a6d5 }}/luna_backend-web:${{ github.sha }}
         file: ./Dockerfile
 
   deploy:
@@ -47,5 +47,5 @@ jobs:
       with:
         app-name: 'luna-backend'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_147dc0caaef645e7a44d2e8a80e64007 }}
-        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_ea168a39114b49bab30f5fc497b5bcb8 }}/caodoe/luna_backend-web:${{ github.sha }}'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_a9b20843743943d8b159c61cf3725fb6 }}
+        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_e4d3f41fdbac4297acc26ce1e833a6d5 }}/luna_backend-web:${{ github.sha }}'
