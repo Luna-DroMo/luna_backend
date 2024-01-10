@@ -24,7 +24,7 @@ from django.http import JsonResponse
 
 @api_view(['GET'])
 def hello_world(request):
-    return Response({"message": "Hello"})
+    return Response({"message": "Succesfully received to endpoint!"})
 
 
 @api_view(['POST'])
