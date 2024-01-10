@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import User, StudentUser, Module
+from core.models import User, StudentUser, Module, Form
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -26,3 +26,8 @@ class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
         fields = ['resource_id', 'title']
+
+class FormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Form
+        fields = "__all__" 

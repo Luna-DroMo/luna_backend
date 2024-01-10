@@ -123,6 +123,7 @@ class Form(models.Model):
     class FormType(models.TextChoices):
         EQ = 'EQ', 'EQ'
         IQ = 'IQ', 'IQ'
+        AIST = 'AIST','AIST'
 
     class ResolutionStatus(models.TextChoices):
         DONE = 'COMPLETED', 'Completed'
@@ -143,6 +144,9 @@ class Form(models.Model):
         choices=ResolutionStatus.choices,
         default=ResolutionStatus.ONGOING
     )
+
+    def __str__(self):
+        return f"{self.user} - {self.name}"
 
 
 class Module(models.Model):

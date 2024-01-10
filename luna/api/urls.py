@@ -16,6 +16,10 @@ urlpatterns = [
         views.get_studentusers,
         name="get_all_studentusers",
     ),
+    path(
+        "student/save_form/<int:student_id>",
+        views.save_form, name="save_form_data"
+    )
 ]
 
 # urlpatterns = [  # all the CRUD operations for student users
