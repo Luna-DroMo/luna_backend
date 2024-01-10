@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Automated Deployment - Luna Backend to Azure - 
+name: Build and deploy container app to Azure Web App - luna-backend
 
 on:
   push:
@@ -11,68 +11,41 @@ on:
 
 jobs:
   build:
-    runs-on: "ubuntu-latest"
+    runs-on: 'ubuntu-latest'
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-<<<<<<< HEAD
     - name: Log in to registry
       uses: docker/login-action@v2
       with:
         registry: https://index.docker.io/v1/
-        username: ${{ secrets.AzureAppService_ContainerUsername_6325f75a3c06479f8e71fcfa4585da0b }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_85d52afecd42432f91c1b699572c3fbf }}
+        username: ${{ secrets.AzureAppService_ContainerUsername_ea168a39114b49bab30f5fc497b5bcb8 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_64be5e0493264a4c9311b2b2bec7f10f }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_6325f75a3c06479f8e71fcfa4585da0b }}/luna_backend-web:${{ github.sha }}
+        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_ea168a39114b49bab30f5fc497b5bcb8 }}/caodoe/luna_backend-web:${{ github.sha }}
         file: ./Dockerfile
-=======
-      - name: Log in to registry
-        uses: docker/login-action@v2
-        with:
-          registry: https://index.docker.io/v1/
-          username: ${{ secrets.AzureAppService_ContainerUsername_25c331598ce041989d79f915653d15de }}
-          password: ${{ secrets.AzureAppService_ContainerPassword_5d52ec3131844ed892bc54638fc4cbcd }}
-
-      - name: Build and push container image to registry
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_25c331598ce041989d79f915653d15de }}/caodoe/luna_backend-web:${{ github.sha }}
-          file: ./Dockerfile
->>>>>>> 9455f7f (rebuild)
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: "production"
+      name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-<<<<<<< HEAD
     - name: Deploy to Azure Web App
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v2
       with:
         app-name: 'luna-backend'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_98459eacb6ee4d77b7ca0d48dc46412e }}
-        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_6325f75a3c06479f8e71fcfa4585da0b }}/luna_backend-web:${{ github.sha }}'
-=======
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: "luna-backend"
-          slot-name: "production"
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_b4975609a9e74318842c32e59b424d05 }}
-          images: "index.docker.io/${{ secrets.AzureAppService_ContainerUsername_25c331598ce041989d79f915653d15de }}/caodoe/luna_backend-web:${{ github.sha }}"
->>>>>>> 9455f7f (rebuild)
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_147dc0caaef645e7a44d2e8a80e64007 }}
+        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_ea168a39114b49bab30f5fc497b5bcb8 }}/caodoe/luna_backend-web:${{ github.sha }}'
