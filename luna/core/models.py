@@ -145,6 +145,9 @@ class Form(models.Model):
         default=ResolutionStatus.ONGOING
     )
 
+    class Meta:
+        unique_together = ('user', 'name')
+
     def __str__(self):
         return f"{self.user} - {self.name}"
 
