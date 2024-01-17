@@ -27,7 +27,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: index.docker.io/${{ secrets.DOCKER_USERNAME }}/luna_backend-web:latest
+          tags: index.docker.io/${{ secrets.DOCKER_USERNAME }}/luna_backend-web:${{github.sha}}
           file: ./Dockerfile
 
   deploy:
