@@ -5,7 +5,6 @@ chmod +x wait-for-it.sh
 # Wait for the database to be ready
 echo "Waiting for database."
 
-
 # Wait for the database to be ready
 ./wait-for-it.sh db:5432 -t 60
 
