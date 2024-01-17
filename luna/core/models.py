@@ -60,7 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         LECTURER = 2
         ADMIN = 3
 
-    user_type = models.IntegerField(choices=UserType.choices, default=4)
+    user_type = models.IntegerField(choices=UserType.choices, default=1)
 
     objects = CustomUserManager()
 
@@ -147,11 +147,19 @@ class Form(models.Model):
 
 class Module(models.Model):
     resource_id = models.CharField(max_length=10, null=True, unique=True)
-    instructor = models.CharField(max_length=255, null=True)
+    instructor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        # Limit choices to LECTURER users
+        limit_choices_to={'user_type': [2, 3]}
+    )
+    owners = models.ManyToManyField(
+        User, limit_choices_to=[2, 3], related_name='owners')
     title = models.CharField(max_length=255, null=True)
-    # created_at = models.DateTimeField(auto_now_add=True, null=True)
-    # next_survey_date = models.DateField(blank=True, null=True)
-    # image = models.ImageField(upload_to='images/')
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    next_survey_date = models.DateField(blank=True, null=True)
+    image = models.ImageField(upload_to='images/')
 
     def __str__(self):
         return f"{self.title} ({self.resource_id})"
