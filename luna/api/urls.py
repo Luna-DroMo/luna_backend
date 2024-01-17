@@ -24,6 +24,11 @@ urlpatterns = [
         "getUserType/<int:id>",
         views.getUserType,
         name="get_user_type"
+    ),
+    path(
+        "createModule",
+        views.createModule,
+        name="create_module"
     )
 ]
 

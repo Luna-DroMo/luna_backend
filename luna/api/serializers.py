@@ -25,10 +25,11 @@ class StudentUserSerializer(serializers.ModelSerializer):
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
-        fields = ['resource_id', 'title']
+        fields = "__all__"
 
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
         fields = "__all__" 
+
 

@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+from core.customFields import *
 from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
@@ -60,7 +62,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         LECTURER = 2
         ADMIN = 3
 
-    user_type = models.IntegerField(choices=UserType.choices, default=4)
+    user_type = models.IntegerField(choices=UserType.choices, default=1)
 
     objects = CustomUserManager()
 
@@ -153,15 +155,40 @@ class Form(models.Model):
 
 
 class Module(models.Model):
-    resource_id = models.CharField(max_length=10, null=True, unique=True)
-    instructor = models.CharField(max_length=255, null=True)
-    title = models.CharField(max_length=255, null=True)
-    # created_at = models.DateTimeField(auto_now_add=True, null=True)
+    resource_id = models.CharField(max_length=10, null=True, unique=True) # System ID / PK
+    module_id = models.CharField(max_length=255, null=True) # Module Uni ID eg STAT 101
+    name = models.CharField(max_length=255, null=True)
+    faculty = models.CharField(max_length=255, null=True)
+    institution = models.CharField(max_length=225, null=True)
+    # Point of contact for the module
+    #instructor = models.ForeignKey(
+    #    User,
+    #    on_delete=models.SET_NULL,
+    #    null=True,
+    #    limit_choices_to={'user_type': 2} 
+    #)
+
+    # Owners can make changes and see analysis
+    owners = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        limit_choices_to={'user_type': 2} 
+    )
+
+    password = models.CharField(max_length=255, null=True)
+    start_date = models.DateField(null=False, default=timezone.now)
+    end_date = models.DateField(null=False, default=timezone.now)
+
+
+    created_at = models.DateTimeField(null=False, default=timezone.now)
+    
+    survey_days = DayOfTheWeekField(null=True)
     # next_survey_date = models.DateField(blank=True, null=True)
     # image = models.ImageField(upload_to='images/')
 
     def __str__(self):
-        return f"{self.title} ({self.resource_id})"
+        return f"{self.name} ({self.resource_id})"
 
 
 class StudentModule(models.Model):
@@ -184,3 +211,4 @@ class StudentModule(models.Model):
 
     def __str__(self):
         return f"{self.student} {self.module}"
+    

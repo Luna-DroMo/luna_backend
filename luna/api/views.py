@@ -19,8 +19,6 @@ from .serializers import ModuleSerializer, FormSerializer
 import json
 from django.http import JsonResponse
 
-import logging
-logger = logging.getLogger("mylogger")
 # Update the information of a student user
 
 
@@ -131,8 +129,6 @@ def update_studentuser_with_email(request, email):
 @api_view(["GET"])
 def getUserType(request,id):
     
-    
-    print(request)
     user = get_object_or_404(User, id = id)
     # Check to see if user has right password
     #if not user.check_password(request.data["password"]):
@@ -144,3 +140,42 @@ def getUserType(request,id):
     return Response(
         user.user_type
     )
+
+@api_view(["POST"])
+def createModule(request):
+
+    module_data = request.data
+
+    module_instance = Module(
+      module_id = module_data["module_id"],
+      name = module_data["name"],
+      faculty = module_data["faculty"],
+      password = module_data["password"],
+      start_date = module_data["start_date"],
+      end_date = module_data["end_date"]
+      #survey_days = module_data["survey_days"]
+    )
+
+    module_instance.save()
+    serializer = ModuleSerializer(instance= module_instance)
+    return Response(serializer.data)
+
+def save_form(request, student_id):
+ 
+    try:
+        studentuser = User.objects.get(pk=student_id)
+    except StudentUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    print(studentuser)
+    if request.method == "POST":
+        form_data = request.data
+
+        # Create a new Form instance with JSON content
+        form_instance = Form(user=studentuser, name=form_data['name'], content=form_data['content'])
+
+        # Save the Form instance
+        form_instance.save()
+
+        serializer = FormSerializer(instance=form_instance)
+        return Response(serializer.data)
