@@ -155,11 +155,11 @@ class Form(models.Model):
 
 
 class Module(models.Model):
-    resource_id = models.CharField(max_length=10, null=True, unique=True) # System ID / PK
     module_id = models.CharField(max_length=255, null=True) # Module Uni ID eg STAT 101
     name = models.CharField(max_length=255, null=True)
     faculty = models.CharField(max_length=255, null=True)
     institution = models.CharField(max_length=225, null=True)
+    #resource_id = models.CharField(max_length=4, null=True)
     # Point of contact for the module
     #instructor = models.ForeignKey(
     #    User,
@@ -173,7 +173,7 @@ class Module(models.Model):
         User,
         on_delete=models.SET_NULL,
         null=True,
-        limit_choices_to={'user_type': (2,3)} 
+        limit_choices_to=({'user_type':2, 'user_type':3})
     )
 
     password = models.CharField(max_length=255, null=True)
@@ -191,7 +191,7 @@ class Module(models.Model):
         unique_together = ('module_id', 'faculty')
 
     def __str__(self):
-        return f"{self.name} ({self.resource_id})"
+        return f"{self.name} ({self.module_id})"
 
 
 class StudentModule(models.Model):
