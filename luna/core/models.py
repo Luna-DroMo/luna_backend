@@ -159,7 +159,6 @@ class Module(models.Model):
     title = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     next_survey_date = models.DateField(blank=True, null=True)
-    image = models.ImageField(upload_to='images/')
 
     def __str__(self):
         return f"{self.title} ({self.resource_id})"
