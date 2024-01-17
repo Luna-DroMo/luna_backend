@@ -51,7 +51,11 @@ jobs:
 
       - name: Deploy to AWS EC2
         run: |
-          mkdir test
-          "cd luna_backend && \
-          docker-compose pull && \
+          ssh -o StrictHostKeyChecking=no ec2-user@52.5.114.46 "\
+          echo 'Listing root directory contents:'; ls -l; \
+          echo 'Entering luna_backend directory...'; \
+          cd luna_backend && echo 'Listing luna_backend directory contents:'; ls -l; \
+          echo 'Pulling latest Docker images...'; \
+          docker-compose pull; \
+          echo 'Recreating containers...'; \
           docker-compose up -d --force-recreate"
