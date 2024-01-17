@@ -19,6 +19,8 @@ from .serializers import ModuleSerializer, FormSerializer
 import json
 from django.http import JsonResponse
 
+import logging
+logger = logging.getLogger("mylogger")
 # Update the information of a student user
 
 
@@ -127,15 +129,18 @@ def update_studentuser_with_email(request, email):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
-def getUserType(request):
-    user = get_object_or_404(User, email = request.data["email"])
+def getUserType(request,id):
+    
+    
+    print(request)
+    user = get_object_or_404(User, id = id)
     # Check to see if user has right password
-    if not user.check_password(request.data["password"]):
-        return Response(
-            {"detail": "Not found."},
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
-    else:
-        return Response(
-            user.user_type
-        )
+    #if not user.check_password(request.data["password"]):
+    #    return Response(
+    #        {"detail": "Not found."},
+    #        status=status.HTTP_401_UNAUTHORIZED,
+    #    )
+    #else:
+    return Response(
+        user.user_type
+    )

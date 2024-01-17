@@ -21,7 +21,7 @@ urlpatterns = [
         views.save_form, name="save_form_data"
     ),
     path(
-        "getUserType",
+        "getUserType/<int:id>",
         views.getUserType,
         name="get_user_type"
     )
