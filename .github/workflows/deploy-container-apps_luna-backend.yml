@@ -57,7 +57,7 @@ jobs:
 
           # SSH into the EC2 instance and execute Docker Compose commands
           ssh -o StrictHostKeyChecking=no ec2-user@52.5.114.46 \
-          "cd /luna-backend && \
+          "cd /luna_backend && \
           docker-compose down && \
           docker-compose pull && \
           docker-compose up -d"
