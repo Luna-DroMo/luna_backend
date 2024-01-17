@@ -45,7 +45,7 @@ jobs:
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.YOUR_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 52.5.114.46 >> ~/.ssh/known_hosts
 
@@ -56,7 +56,7 @@ jobs:
           sudo apt-get install -y openssh-client
 
           # SSH into the EC2 instance and execute Docker Compose commands
-          ssh -o StrictHostKeyChecking=no ec2-user@52.5.114.46 \
+          ssh -o StrictHostKeyChecking=no luna_user@52.5.114.46 \
           "cd /luna-backend && \
           docker-compose down && \
           docker-compose pull && \
