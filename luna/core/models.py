@@ -173,7 +173,7 @@ class Module(models.Model):
         User,
         on_delete=models.SET_NULL,
         null=True,
-        limit_choices_to={'user_type': 2} 
+        limit_choices_to={'user_type': (2,3)} 
     )
 
     password = models.CharField(max_length=255, null=True)
@@ -186,6 +186,9 @@ class Module(models.Model):
     survey_days = DayOfTheWeekField(null=True)
     # next_survey_date = models.DateField(blank=True, null=True)
     # image = models.ImageField(upload_to='images/')
+
+    class Meta:
+        unique_together = ('module_id', 'faculty')
 
     def __str__(self):
         return f"{self.name} ({self.resource_id})"
