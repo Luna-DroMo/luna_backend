@@ -19,6 +19,11 @@ urlpatterns = [
     path(
         "student/save_form/<int:student_id>",
         views.save_form, name="save_form_data"
+    ),
+    path(
+        "getUserType",
+        views.getUserType,
+        name="get_user_type"
     )
 ]
 
