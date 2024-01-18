@@ -29,6 +29,11 @@ urlpatterns = [
         "createModule",
         views.createModule,
         name="create_module"
+    ),
+    path(
+        "getModuleByID",
+        views.get_module_by_id,
+        name="get_module_by_id"
     )
 ]
 

@@ -91,7 +91,7 @@ def get_student_modules(request, student_id):
 
 
 @api_view(["GET"])
-def get_studentusers(request):
+def get_studentusers(request,email):
     if request.method == "GET":
         queryset = StudentUser.objects.all()
         serializer = StudentUserSerializer(queryset, many=True)
@@ -160,22 +160,7 @@ def createModule(request):
     serializer = ModuleSerializer(instance= module_instance)
     return Response(serializer.data)
 
-def save_form(request, student_id):
- 
-    try:
-        studentuser = User.objects.get(pk=student_id)
-    except StudentUser.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
 
-    print(studentuser)
-    if request.method == "POST":
-        form_data = request.data
-
-        # Create a new Form instance with JSON content
-        form_instance = Form(user=studentuser, name=form_data['name'], content=form_data['content'])
-
-        # Save the Form instance
-        form_instance.save()
-
-        serializer = FormSerializer(instance=form_instance)
-        return Response(serializer.data)
+def get_module_by_id(request,id):
+    module = get_object_or_404(Module, id=id)
+    return Response(module)
