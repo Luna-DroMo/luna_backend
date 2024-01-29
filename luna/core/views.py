@@ -55,7 +55,6 @@ def signup(request):
             {
                 "token": token.key,
                 "user": serializer.data,
-                # "otp": send_otp_via_email(email=request.data["email"]),
             }
         )
     print(serializer.errors)

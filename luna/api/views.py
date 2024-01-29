@@ -3,6 +3,7 @@ from rest_framework.decorators import (
     authentication_classes,
     permission_classes,
 )
+from rest_framework.views import APIView
 from rest_framework.authentication import (
     SessionAuthentication,
     TokenAuthentication,
@@ -19,12 +20,12 @@ from .serializers import ModuleSerializer, FormSerializer
 import json
 from django.http import JsonResponse
 
-# Update the information of a student user
 
+class TestView(APIView):
+    permission_classes = [IsAuthenticated]
 
-@api_view(['GET'])
-def hello_world(request):
-    return Response({"message": "Succesfully received to endpoint!"})
+    def get(self, request, *args, **kwargs):
+        return Response('+', status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -55,7 +56,7 @@ def update_studentuser_with_id(request, pk):
 
 @api_view(["POST"])
 def save_form(request, student_id):
- 
+
     try:
         studentuser = User.objects.get(pk=student_id)
     except StudentUser.DoesNotExist:
@@ -66,7 +67,8 @@ def save_form(request, student_id):
         form_data = request.data
 
         # Create a new Form instance with JSON content
-        form_instance = Form(user=studentuser, name=form_data['name'], content=form_data['content'])
+        form_instance = Form(
+            user=studentuser, name=form_data['name'], content=form_data['content'])
 
         # Save the Form instance
         form_instance.save()
@@ -91,7 +93,7 @@ def get_student_modules(request, student_id):
 
 
 @api_view(["GET"])
-def get_studentusers(request,email):
+def get_studentusers(request, email):
     if request.method == "GET":
         queryset = StudentUser.objects.all()
         serializer = StudentUserSerializer(queryset, many=True)
@@ -126,20 +128,22 @@ def update_studentuser_with_email(request, email):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(["GET"])
-def getUserType(request,id):
-    
-    user = get_object_or_404(User, id = id)
+def getUserType(request, id):
+
+    user = get_object_or_404(User, id=id)
     # Check to see if user has right password
-    #if not user.check_password(request.data["password"]):
+    # if not user.check_password(request.data["password"]):
     #    return Response(
     #        {"detail": "Not found."},
     #        status=status.HTTP_401_UNAUTHORIZED,
     #    )
-    #else:
+    # else:
     return Response(
         user.user_type
     )
+
 
 @api_view(["POST"])
 def createModule(request):
@@ -147,20 +151,20 @@ def createModule(request):
     module_data = request.data
 
     module_instance = Module(
-      module_id = module_data["module_id"],
-      name = module_data["name"],
-      faculty = module_data["faculty"],
-      password = module_data["password"],
-      start_date = module_data["start_date"],
-      end_date = module_data["end_date"]
-      #survey_days = module_data["survey_days"]
+        module_id=module_data["module_id"],
+        name=module_data["name"],
+        faculty=module_data["faculty"],
+        password=module_data["password"],
+        start_date=module_data["start_date"],
+        end_date=module_data["end_date"]
+        # survey_days = module_data["survey_days"]
     )
 
     module_instance.save()
-    serializer = ModuleSerializer(instance= module_instance)
+    serializer = ModuleSerializer(instance=module_instance)
     return Response(serializer.data)
 
 
-def get_module_by_id(request,id):
+def get_module_by_id(request, id):
     module = get_object_or_404(Module, id=id)
     return Response(module)
