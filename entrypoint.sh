@@ -1,14 +1,18 @@
 #!/bin/bash
+curl -o wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
+chmod +x wait-for-it.sh
 
 # Wait for the database to be ready
-echo "Waiting for database..."
-# Add your database waiting logic here
+echo "Waiting for database."
 
-# Apply database migrations
-echo "Applying database migrations..."
-python manage.py makemigrations
-python manage.py migrate
 
-# Start the Django development server
-echo "Starting Django server..."
-python manage.py runserver 0.0.0.0:8000
+# Wait for the database to be ready
+./wait-for-it.sh db:5432 -t 60
+
+# Run database migrations
+python3 manage.py makemigrations
+python3 manage.py migrate
+
+# Start the Django server
+python3 manage.py runserver 0.0.0.0:80
+

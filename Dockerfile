@@ -18,8 +18,13 @@ COPY . .
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Expose the application port
-EXPOSE 8000
+# Change the working directory to /app/luna
+WORKDIR /app/luna
+
+# RUN python3 manage.py makemigrations
+# RUN python3 manage.py migrate
+
+EXPOSE 80
 
 # Start the application using the entrypoint script
 ENTRYPOINT ["/entrypoint.sh"]
