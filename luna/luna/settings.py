@@ -89,9 +89,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('PGNAME', 'postgres'),
         # 'USER': os.getenv('PGUSER'),
-        'USER': 'postgres',
+        'USER': 'cagatay',
         # 'PASSWORD': os.getenv('PGPASSWORD'),
-        'PASSWORD': 'admin',
+        'PASSWORD': 'Cagatay66.',
         'HOST': os.getenv('PGHOST'),  # Use the service name
         'PORT': '5432',
     }
