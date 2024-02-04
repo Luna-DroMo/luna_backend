@@ -3,7 +3,7 @@ name: Build and deploy container app to AWS EC2
 on:
   push:
     branches:
-      - deploy-container-apps
+      - main
   workflow_dispatch:
 
 jobs:
