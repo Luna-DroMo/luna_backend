@@ -45,6 +45,12 @@ INSTALLED_APPS = [
     "core",
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
+
 AUTH_USER_MODEL = "core.User"
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -87,13 +93,11 @@ WSGI_APPLICATION = "luna.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('PGNAME', 'postgres'),
-        #'USER': os.getenv('PGUSER'),
-         'USER': 'postgres',
-        #'PASSWORD': os.getenv('PGPASSWORD'),
-        'PASSWORD': 'admin',
-        'HOST': os.getenv('PGHOST'),  # Use the service name
-        'PORT': '5432',
+        'NAME': os.getenv('PGNAME'),
+        'USER': os.getenv('PGUSER'),
+        'PASSWORD': os.getenv('PGPASSWORD'),
+        'HOST': os.getenv('PGHOST'),
+        'PORT': os.getenv('PGHOST')
     }
 }
 

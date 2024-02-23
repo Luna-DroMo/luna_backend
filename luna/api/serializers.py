@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import User, StudentUser, Module, Form
+from core.models import User, StudentUser, Module, Form, StudentModule, StudentForm
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -27,9 +27,28 @@ class ModuleSerializer(serializers.ModelSerializer):
         model = Module
         fields = "__all__"
 
+
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
-        fields = "__all__" 
+        fields = "__all__"
 
 
+class StudentModuleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StudentModule
+        fields = "__all__"
+
+
+class StudentFormSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StudentForm
+        fields = "__all__"
+
+
+class DetailedStudentFormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentForm
+        fields = "__all__"
