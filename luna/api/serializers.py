@@ -35,6 +35,7 @@ class FormSerializer(serializers.ModelSerializer):
 
 
 class StudentModuleSerializer(serializers.ModelSerializer):
+    module = ModuleSerializer()
 
     class Meta:
         model = StudentModule
@@ -49,6 +50,8 @@ class StudentFormSerializer(serializers.ModelSerializer):
 
 
 class DetailedStudentFormSerializer(serializers.ModelSerializer):
+    form = FormSerializer()
+
     class Meta:
         model = StudentForm
         fields = "__all__"

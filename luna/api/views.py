@@ -49,26 +49,41 @@ class ModuleView(APIView):
 class StudentFormsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, student_id, form_type=None, form_id=None):
-        if not StudentUser.objects.filter(pk=student_id).exists():
-            return Response({'error': 'Invalid student_id'}, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, student_id, identifier=None):
 
-        if form_id is not None:
-            return self.handle_form_by_id(request, student_id, form_id)
+        student = get_object_or_404(StudentUser, pk=student_id)
 
-        if form_type and form_type not in dict(Form.FormType.choices):
-            return Response({'error': 'Invalid form_type'}, status=status.HTTP_400_BAD_REQUEST)
+    #    # Check if the student exists
+    #     if not StudentUser.objects.filter(pk=student_id).exists():
+    #         return Response({'error': 'Invalid student_id'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if form_type:
-            student_forms = StudentForm.objects.filter(
-                student_id=student_id, form__form_type=form_type)
-        else:
+        # Case 1: No identifier provided, return all forms for the student
+        if identifier is None:
             student_forms = StudentForm.objects.filter(student_id=student_id)
+            serializer = StudentFormSerializer(student_forms, many=True)
+            return Response(serializer.data)
 
-        serializer = StudentFormSerializer(student_forms, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # Attempt to process the identifier as an integer (form_id)
+        try:
+            form_id = int(identifier)
+            # Case 3: Identifier is an integer, treat as form_id
+            student_forms = StudentForm.objects.get(
+                student_id=student_id, id=form_id)
+            serializer = DetailedStudentFormSerializer(student_forms)
+        except ValueError:
+            # Case 2: Identifier is not an integer, treat as form_type
+            if identifier not in dict(Form.FormType.choices):
+                return Response({'error': 'Invalid form_type'}, status=status.HTTP_400_BAD_REQUEST)
+            student_forms = StudentForm.objects.filter(
+                student_id=student_id, form__form_type=identifier)
+            serializer = DetailedStudentFormSerializer(
+                student_forms, many=True)
+
+        return Response(serializer.data)
 
     def post(self, request, student_id, form_type):
+
+        get_object_or_404(StudentUser, pk=student_id)
         data = json.loads(request.body)
 
         for question in data.get("questions", []):
@@ -90,45 +105,15 @@ class StudentFormsView(APIView):
 
         return Response({"success": "Form updated successfully"}, status=status.HTTP_200_OK)
 
-    def handle_form_by_id(self, request, student_id, form_id):
+    def handle_form_by_id(self, request, student_id, form_identifier):
         try:
             student_form = StudentForm.objects.select_related('form').get(
-                student_id=student_id, form_id=form_id
+                student_id=student_id, form_id=form_identifier
             )
             serializer = DetailedStudentFormSerializer(student_form)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except StudentForm.DoesNotExist:
             return Response({'error': 'Student form not found.'}, status=status.HTTP_404_NOT_FOUND)
-# Class-based views defined will be refactored according to url discpatcher inside the views.py file.
-# class StudentFormsView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request, student_id, form_type=None, form_id=None):
-#         if form_id:
-#             return self.handle_form_by_id(request, student_id, form_id)
-#         elif form_type:
-#             return self.handle_forms_by_type(request, student_id, form_type)
-#         else:
-#             return self.handle_all_forms(request, student_id)
-
-#     def post(self, request, student_id, form_type=None, form_id=None):
-#         if form_type:
-#             return self.handle_form_submission(request, student_id, form_type)
-#         return Response({"error": "Form type is required for submission."}, status=status.HTTP_400_BAD_REQUEST)
-
-#     def handle_all_forms(self, request, student_id):
-
-#         pass
-
-#     def handle_forms_by_type(self, request, student_id, form_type):
-
-#         pass
-
-#     def handle_form_by_id(self, request, student_id, form_id):
-#         pass
-
-#     def handle_form_submission(self, request, student_id, form_type):
-#         pass
 
 
 # Function-based views defined below.
