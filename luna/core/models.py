@@ -141,6 +141,7 @@ class Form(models.Model):
 class StudentForm(models.Model):
     student = models.ForeignKey('StudentUser', on_delete=models.CASCADE)
     form = models.ForeignKey('Form', on_delete=models.CASCADE)
+    submitted_at = models.DateTimeField(null=True, default=None)
 
     class ResolutionStatus(models.TextChoices):
         COMPLETED = 'COMPLETED', 'Completed'

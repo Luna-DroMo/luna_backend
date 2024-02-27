@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from core.models import StudentUser, Module, StudentModule, Form, User, StudentForm
 from core.serializers import StudentUserSerializer
-from .serializers import ModuleSerializer, FormSerializer, StudentModuleSerializer, StudentFormSerializer, DetailedStudentFormSerializer
+from .serializers import ModuleSerializer, FormSerializer, StudentModuleSerializer, StudentFormSerializer, DetailedStudentFormSerializer, DynamicStudentFormSerializer
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 
@@ -53,25 +53,18 @@ class StudentFormsView(APIView):
 
         student = get_object_or_404(StudentUser, pk=student_id)
 
-    #    # Check if the student exists
-    #     if not StudentUser.objects.filter(pk=student_id).exists():
-    #         return Response({'error': 'Invalid student_id'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Case 1: No identifier provided, return all forms for the student
         if identifier is None:
             student_forms = StudentForm.objects.filter(student_id=student_id)
-            serializer = StudentFormSerializer(student_forms, many=True)
+            serializer = DynamicStudentFormSerializer(
+                student_forms, many=True, context={'exclude_content': True})
             return Response(serializer.data)
 
-        # Attempt to process the identifier as an integer (form_id)
         try:
             form_id = int(identifier)
-            # Case 3: Identifier is an integer, treat as form_id
             student_forms = StudentForm.objects.get(
                 student_id=student_id, id=form_id)
             serializer = DetailedStudentFormSerializer(student_forms)
         except ValueError:
-            # Case 2: Identifier is not an integer, treat as form_type
             if identifier not in dict(Form.FormType.choices):
                 return Response({'error': 'Invalid form_type'}, status=status.HTTP_400_BAD_REQUEST)
             student_forms = StudentForm.objects.filter(
@@ -81,29 +74,30 @@ class StudentFormsView(APIView):
 
         return Response(serializer.data)
 
-    def post(self, request, student_id, form_type):
+    def post(self, request, student_id, identifier=None):
+        if identifier is not None:
+            return Response({'error': 'Invalid request while submitting the form.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        get_object_or_404(StudentUser, pk=student_id)
-        data = json.loads(request.body)
+        data = request.data
+        form_type = data.get('form_type')
 
-        for question in data.get("questions", []):
-            if question.get("response") in [None, ""]:
-                return Response({"error": "Response cannot be null"}, status=status.HTTP_400_BAD_REQUEST)
-
+        # Fetch the existing StudentForm instance using student_id and form_type
         try:
             student_form = StudentForm.objects.get(
-                student_id=student_id,
-                form__form_type=form_type,
-                resolution=StudentForm.ResolutionStatus.NOT_COMPLETED
+                student_id=student_id,  # Use the correct field name as per your model definition
+                form__form_type=form_type  # This assumes `form` is the ForeignKey to the Form model
             )
         except StudentForm.DoesNotExist:
-            return Response({"error": "Student form not found or already completed"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Student form not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        student_form.content = data.questions
-        student_form.resolution = StudentForm.ResolutionStatus.COMPLETED
-        student_form.save()
-
-        return Response({"success": "Form updated successfully"}, status=status.HTTP_200_OK)
+        # Serialize data to update the existing StudentForm instance
+        serializer = StudentFormSerializer(
+            student_form, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"success": "Form updated successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def handle_form_by_id(self, request, student_id, form_identifier):
         try:
