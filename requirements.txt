@@ -9,4 +9,5 @@ sqlparse==0.4.4
 typing-extensions==4.7.1
 tzdata==2023.3
 dotenv==0.0.5
+drf_yasg==1.21.7
 ```
