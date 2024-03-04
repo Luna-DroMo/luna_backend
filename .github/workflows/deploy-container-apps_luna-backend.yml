@@ -1,51 +1,61 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy container app to Azure Web App - luna-backend
+name: Build and deploy container app to AWS EC2
 
 on:
   push:
     branches:
-      - deploy-container-apps
+      - main
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Log in to registry
-      uses: docker/login-action@v2
-      with:
-        registry: https://index.docker.io/v1/
-        username: ${{ secrets.AzureAppService_ContainerUsername_6325f75a3c06479f8e71fcfa4585da0b }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_85d52afecd42432f91c1b699572c3fbf }}
+      - name: Log in to Docker registry
+        uses: docker/login-action@v2
+        with:
+          registry: https://index.docker.io/v1/
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push container image to registry
-      uses: docker/build-push-action@v3
-      with:
-        push: true
-        tags: index.docker.io/${{ secrets.AzureAppService_ContainerUsername_6325f75a3c06479f8e71fcfa4585da0b }}/luna_backend-web:${{ github.sha }}
-        file: ./Dockerfile
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: index.docker.io/${{ secrets.DOCKER_USERNAME }}/luna_backend-web:latest
+          file: ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-    - name: Deploy to Azure Web App
-      id: deploy-to-webapp
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: 'luna-backend'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_98459eacb6ee4d77b7ca0d48dc46412e }}
-        images: 'index.docker.io/${{ secrets.AzureAppService_ContainerUsername_6325f75a3c06479f8e71fcfa4585da0b }}/luna_backend-web:${{ github.sha }}'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 52.5.114.46 >> ~/.ssh/known_hosts
+
+      - name: Deploy to AWS EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@52.5.114.46 "\
+          echo 'Listing root directory contents:'; ls -l; \
+          echo 'Entering luna_backend directory...'; \
+          cd luna_backend && echo 'Listing luna_backend directory contents:'; ls -l; \
+          echo 'Pulling latest Docker images...'; \
+          docker-compose pull; \
+          echo 'Recreating containers...'; \
+          docker-compose up -d --force-recreate"
