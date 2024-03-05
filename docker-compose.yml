@@ -1,0 +1,47 @@
+version: "3"
+
+networks:
+  luna:
+    driver: bridge
+
+services:
+  web:
+    image: "caodoe/luna_backend-web:latest"
+    build: .
+    ports:
+      - "80:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    networks:
+      - luna
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - luna
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 8001
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+    networks:
+      - luna
+
+volumes:
+  postgres_data:

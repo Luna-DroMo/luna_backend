@@ -18,7 +18,9 @@ COPY . .
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Expose the application port
+# Change the working directory to /app/luna
+WORKDIR /app/luna
+
 EXPOSE 8000
 
 # Start the application using the entrypoint script

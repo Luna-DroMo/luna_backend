@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+from core.customFields import *
 from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
@@ -45,7 +47,6 @@ class CustomUserManager(BaseUserManager):
         return self._create_user(email, password, first_name, last_name, **extra_fields)
 
 
-# Create your User Model here.
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(db_index=True, unique=True, max_length=254)
     first_name = models.CharField(max_length=240, blank=True, null=True)
@@ -54,13 +55,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
+    university_id = models.ForeignKey(
+        'University', on_delete=models.SET_NULL, null=True)
 
     class UserType(models.IntegerChoices):
         STUDENT = 1
         LECTURER = 2
         ADMIN = 3
 
-    user_type = models.IntegerField(choices=UserType.choices, default=4)
+    user_type = models.IntegerField(choices=UserType.choices, default=1)
 
     objects = CustomUserManager()
 
@@ -87,7 +90,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class StudentUser(models.Model):
-
     class UserLanguages(models.TextChoices):
         EN = "EN", "English"
         DE = "DE", "German"
@@ -95,10 +97,6 @@ class StudentUser(models.Model):
 
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, primary_key=True)
-    # user_id = models.IntegerField(primary_key=True)
-    email = models.EmailField(
-        max_length=254, db_index=True, unique=True
-    )  # Add this field
     first_name = models.CharField(max_length=50, blank=True, null=True)
     middle_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50, blank=True, null=True)
@@ -123,6 +121,7 @@ class Form(models.Model):
     class FormType(models.TextChoices):
         EQ = 'EQ', 'EQ'
         IQ = 'IQ', 'IQ'
+        AIST = 'AIST', 'AIST'
 
     class ResolutionStatus(models.TextChoices):
         DONE = 'COMPLETED', 'Completed'
@@ -144,36 +143,68 @@ class Form(models.Model):
         default=ResolutionStatus.ONGOING
     )
 
-
-class Module(models.Model):
-    resource_id = models.CharField(max_length=10, null=True, unique=True)
-    instructor = models.CharField(max_length=255, null=True)
-    title = models.CharField(max_length=255, null=True)
-    # created_at = models.DateTimeField(auto_now_add=True, null=True)
-    # next_survey_date = models.DateField(blank=True, null=True)
-    # image = models.ImageField(upload_to='images/')
+    class Meta:
+        unique_together = ('user', 'name')
 
     def __str__(self):
-        return f"{self.title} ({self.resource_id})"
+        return f"{self.user} - {self.name}"
+
+
+class Module(models.Model):
+    name = models.CharField(max_length=255, null=True)
+    faculty = models.ForeignKey(
+        'Faculty', on_delete=models.CASCADE, null=True)
+    owners = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        limit_choices_to=({'user_type': 2, 'user_type': 3})
+    )
+    password = models.CharField(max_length=255, null=True)
+    start_date = models.DateField(null=False, default=timezone.now)
+    end_date = models.DateField(null=False, default=timezone.now)
+    created_at = models.DateTimeField(null=False, default=timezone.now)
+    survey_days = DayOfTheWeekField(null=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.module_id})"
 
 
 class StudentModule(models.Model):
-
     class SurveyStatus(models.TextChoices):
-        NOT_STARTED = 'Not Started'
+        NOT_STARTED = 'NOT_STARTED'
         COMPLETED = 'COMPLETED'
 
     student = models.ForeignKey('StudentUser', on_delete=models.CASCADE)
     module = models.ForeignKey('Module', on_delete=models.CASCADE)
-    # survey_status = models.CharField(
-    #     max_length=20,
-    #     choices=SurveyStatus.choices,
-    #     default=SurveyStatus.NOT_STARTED,
-    #     null=True
-    # )
+    survey_status = models.CharField(
+        max_length=20,
+        choices=SurveyStatus.choices,
+        default=SurveyStatus.NOT_STARTED,
+        null=True
+    )
 
     class Meta:
         unique_together = ('student', 'module')
 
     def __str__(self):
         return f"{self.student} {self.module}"
+
+
+class University(models.Model):
+    name = models.CharField(max_length=255, null=True)
+    created_at = models.DateTimeField(null=False, default=timezone.now)
+    updated_at = models.DateTimeField(null=False, default=timezone.now)
+
+    def __str__(self):
+        return f"{self.module} {self.university}"
+
+
+class Faculty(models.Model):
+    name = models.CharField(max_length=255, null=True)
+    created_at = models.DateTimeField(null=False, default=timezone.now)
+    updated_at = models.DateTimeField(null=False, default=timezone.now)
+    university_id = models.ForeignKey('University', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.name}"
