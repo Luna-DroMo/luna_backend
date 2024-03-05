@@ -55,8 +55,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
-    university_id = models.ForeignKey(
-        'University', on_delete=models.SET_NULL, null=True)
+    # university_id = models.ForeignKey(
+    #     'University', on_delete=models.SET_NULL, null=True)
 
     class UserType(models.IntegerChoices):
         STUDENT = 1
@@ -116,35 +116,45 @@ class StudentUser(models.Model):
         super().save(*args, **kwargs)
 
 
-# This is for form table, we are going to connect this one with Form
 class Form(models.Model):
+
+    name = models.CharField(max_length=255)
+    content = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by_user = models.ForeignKey('User', on_delete=models.CASCADE, null=True
+                                        )
+    # university = models.ForeignKey(
+    #     'University', on_delete=models.CASCADE, null=True)
+
     class FormType(models.TextChoices):
         EQ = 'EQ', 'EQ'
         IQ = 'IQ', 'IQ'
         AIST = 'AIST', 'AIST'
 
-    class ResolutionStatus(models.TextChoices):
-        DONE = 'COMPLETED', 'Completed'
-        ONGOING = 'NOT_COMPLETED', 'Not Completed'
-
-    name = models.CharField(max_length=255)
-    content = models.JSONField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    # Adjust this if User is in a different file
-    user = models.ForeignKey('User', on_delete=models.CASCADE)
     form_type = models.CharField(
         max_length=50,
         choices=FormType.choices,
         default=FormType.EQ
     )
+
+
+class StudentForm(models.Model):
+    student = models.ForeignKey('StudentUser', on_delete=models.CASCADE)
+    form = models.ForeignKey('Form', on_delete=models.CASCADE)
+    submitted_at = models.DateTimeField(null=True, default=None)
+
+    class ResolutionStatus(models.TextChoices):
+        COMPLETED = 'COMPLETED', 'Completed'
+        NOT_COMPLETED = 'NOT_COMPLETED', 'Not Completed'
     resolution = models.CharField(
         max_length=20,
         choices=ResolutionStatus.choices,
-        default=ResolutionStatus.ONGOING
+        default=ResolutionStatus.NOT_COMPLETED
     )
+    content = models.JSONField(null=True, default=None)
 
     class Meta:
-        unique_together = ('user', 'name')
+        unique_together = ('student', 'form')
 
     def __str__(self):
         return f"{self.user} - {self.name}"
@@ -191,6 +201,18 @@ class StudentModule(models.Model):
         return f"{self.student} {self.module}"
 
 
+class StudentSurveys(models.Model):
+    name = models.CharField(max_length=255, null=True)
+    created_at = models.DateTimeField(null=False, default=timezone.now)
+    updated_at = models.DateTimeField(null=False, default=timezone.now)
+    module_id = models.ForeignKey('Module', on_delete=models.CASCADE)
+    student_id = models.ForeignKey('StudentUser', on_delete=models.CASCADE)
+    content = models.JSONField(null=True)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
 class University(models.Model):
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
@@ -208,3 +230,6 @@ class Faculty(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+
+# Path: luna/core/models.py
