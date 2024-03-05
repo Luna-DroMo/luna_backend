@@ -6,10 +6,12 @@ from datetime import datetime
 class UserSerializer(serializers.ModelSerializer):
     class Meta(object):
         model = User
-        fields = "__all__"
+        fields = ['email', 'user_type']
 
 
 class StudentUserSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
     class Meta:
         model = StudentUser
         fields = "__all__"
@@ -113,7 +115,6 @@ class DynamicStudentFormSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
-        # Remove 'content' from fields if 'exclude_content' context is True
         exclude_content = kwargs.pop(
             'context', {}).get('exclude_content', False)
         super(DynamicStudentFormSerializer, self).__init__(*args, **kwargs)
