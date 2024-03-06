@@ -98,15 +98,21 @@ class StudentFormSerializer(serializers.ModelSerializer):
         return instance
 
 
-class DetailedStudentFormSerializer(serializers.ModelSerializer):
-    form = FormSerializer()
+class BackgroundFormSerializer(serializers.ModelSerializer):
+    form_questions = serializers.SerializerMethodField()
+    form_type = serializers.CharField(source='form.form_type')
+    resolution = serializers.CharField()
+    submitted_at = serializers.DateTimeField()
+    response = serializers.CharField(source='content', allow_null=True)
 
-    class Meta(StudentFormSerializer.Meta):
-        pass
+    class Meta:
+        model = StudentForm
+        fields = ['form_questions', 'form_type',
+                  'resolution', 'submitted_at', 'response']
 
-    # class Meta:
-    #     model = StudentForm
-    #     fields = "__all__"
+    def get_form_questions(self, obj):
+        # Accessing form.content directly. You might want to adjust based on your actual content structure.
+        return obj.form.content.get('questions', [])
 
 
 class DynamicStudentFormSerializer(serializers.ModelSerializer):

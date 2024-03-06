@@ -28,8 +28,8 @@ urlpatterns = [
          ModuleView.as_view(), name='student_modules'),
     path("<int:student_id>/forms", views.StudentFormsView.as_view(),
          name="get_all_student_forms"),
-    path("<int:student_id>/forms/<str:identifier>",
-         views.StudentFormsView.as_view(), name="get_student_forms_by_identifier"),
+    path("<int:student_id>/forms/<int:form_id>",
+         views.StudentFormsView.as_view(), name="handle_student_forms"),
     path("<int:student_id>/background", views.get_background_status,
          name="get_background_status"),
 
