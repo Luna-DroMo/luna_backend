@@ -120,3 +120,11 @@ class DynamicStudentFormSerializer(serializers.ModelSerializer):
         super(DynamicStudentFormSerializer, self).__init__(*args, **kwargs)
         if exclude_content:
             self.fields.pop('content', None)
+
+
+class BackgroundStatusSerializer(serializers.Serializer):
+    percentage = serializers.IntegerField()
+    completed_forms = serializers.ListField(child=serializers.CharField())
+    not_completed_forms = serializers.ListField(child=serializers.CharField())
+    personal_info = serializers.ChoiceField(
+        choices=[('completed', 'Completed'), ('not_completed', 'Not Completed')])

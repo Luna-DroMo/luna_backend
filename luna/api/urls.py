@@ -10,7 +10,6 @@ urlpatterns = [
     ),
     path("student/<int:student_id>/modules",
          views.get_student_modules, name="get_student_modules"),
-    path("handle_post", views.handle_post, name="handle_post"),
     path(
         "get_all_studentusers",
         views.get_studentusers,
@@ -31,5 +30,7 @@ urlpatterns = [
          name="get_all_student_forms"),
     path("<int:student_id>/forms/<str:identifier>",
          views.StudentFormsView.as_view(), name="get_student_forms_by_identifier"),
+    path("<int:student_id>/background", views.get_background_status,
+         name="get_background_status"),
 
 ]

@@ -11,7 +11,7 @@ from rest_framework.authentication import (
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from core.models import StudentUser, Module, StudentModule, Form, User, StudentForm
-from .serializers import ModuleSerializer, FormSerializer, StudentModuleSerializer, StudentFormSerializer, DetailedStudentFormSerializer, DynamicStudentFormSerializer, StudentUserSerializer
+from .serializers import ModuleSerializer, FormSerializer, StudentModuleSerializer, StudentFormSerializer, DetailedStudentFormSerializer, DynamicStudentFormSerializer, StudentUserSerializer, BackgroundStatusSerializer
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 
@@ -118,18 +118,53 @@ class StudentView(APIView):
 
 
 # Function-based views defined below.
-@api_view(['POST'])
-def handle_post(request):
-    data = json.loads(request.body)
-    print(data)
-    return JsonResponse({"status": "success", "data_received": data})
+@api_view(["GET"])
+# @permission_classes([IsAuthenticated])
+def get_background_status(request, student_id):
+    try:
+        student = StudentUser.objects.get(pk=student_id)
+    except StudentUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
+    student_forms = StudentForm.objects.filter(
+        student_id=student_id).select_related('form')
+    total_forms = student_forms.count()
 
-@api_view(['POST'])
-def handle_post(request):
-    data = json.loads(request.body)
-    print(data)
-    return JsonResponse({"status": "success", "data_received": data})
+    completed_forms = student_forms.filter(
+        resolution=StudentForm.ResolutionStatus.COMPLETED)
+    not_completed_forms = student_forms.exclude(
+        resolution=StudentForm.ResolutionStatus.COMPLETED)
+
+    completed_form_types = [form.form.form_type for form in completed_forms]
+    not_completed_form_types = [
+        form.form.form_type for form in not_completed_forms]
+
+    percentage = int((len(completed_form_types) / total_forms)
+                     * 100) if total_forms > 0 else 0
+
+    personal_info_fields = [
+        student.first_name,
+        student.last_name,
+        student.birth_date,
+        student.abitur_note,
+        student.main_language,
+        student.financial_support,
+    ]
+    personal_info = all(field is not None for field in personal_info_fields)
+
+    data = {
+        "personal_info": "completed" if personal_info else "not_completed",
+        "percentage": percentage,
+        "completed_forms": completed_form_types,
+        "not_completed_forms": not_completed_form_types,
+    }
+
+    serializer = BackgroundStatusSerializer(data=data)
+
+    if serializer.is_valid():
+        return Response(serializer.data)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["PATCH"])
