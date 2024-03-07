@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import TestView
+from .views import TestView, ModuleView
 urlpatterns = [
     path("test", TestView.as_view(), name="test"),
     path(
@@ -25,14 +25,11 @@ urlpatterns = [
         views.getUserType,
         name="get_user_type"
     ),
-    path(
-        "createModule",
-        views.createModule,
-        name="create_module"
-    ),
-    path(
-        "getModuleByID",
-        views.get_module_by_id,
-        name="get_module_by_id"
-    )
+
+    path('<int:student_id>/modules',
+         ModuleView.as_view(), name='student_modules'),
+    path("<int:student_id>/forms", views.StudentFormsView.as_view(),
+         name="get_all_student_forms"),
+    path("<int:student_id>/forms/<str:identifier>",
+         views.StudentFormsView.as_view(), name="get_student_forms_by_identifier"),
 ]

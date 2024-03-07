@@ -14,11 +14,6 @@ def landing(request):
     return render(request, 'core/index.html')
 
 
-@api_view(["GET"])
-def test(request):
-    return Response({"Test": "Success"})
-
-
 @api_view(["POST"])
 def login(request):
     user = get_object_or_404(User, email=request.data["email"])
