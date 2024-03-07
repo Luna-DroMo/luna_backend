@@ -6,10 +6,12 @@ from datetime import datetime
 class UserSerializer(serializers.ModelSerializer):
     class Meta(object):
         model = User
-        fields = "__all__"
+        fields = ['email', 'user_type']
 
 
 class StudentUserSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
     class Meta:
         model = StudentUser
         fields = "__all__"
@@ -96,15 +98,21 @@ class StudentFormSerializer(serializers.ModelSerializer):
         return instance
 
 
-class DetailedStudentFormSerializer(serializers.ModelSerializer):
-    form = FormSerializer()
+class BackgroundFormSerializer(serializers.ModelSerializer):
+    form_questions = serializers.SerializerMethodField()
+    form_type = serializers.CharField(source='form.form_type')
+    resolution = serializers.CharField()
+    submitted_at = serializers.DateTimeField()
+    response = serializers.CharField(source='content', allow_null=True)
 
-    class Meta(StudentFormSerializer.Meta):
-        pass
+    class Meta:
+        model = StudentForm
+        fields = ['form_questions', 'form_type',
+                  'resolution', 'submitted_at', 'response']
 
-    # class Meta:
-    #     model = StudentForm
-    #     fields = "__all__"
+    def get_form_questions(self, obj):
+        # Accessing form.content directly. You might want to adjust based on your actual content structure.
+        return obj.form.content.get('questions', [])
 
 
 class DynamicStudentFormSerializer(serializers.ModelSerializer):
@@ -113,9 +121,16 @@ class DynamicStudentFormSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
-        # Remove 'content' from fields if 'exclude_content' context is True
         exclude_content = kwargs.pop(
             'context', {}).get('exclude_content', False)
         super(DynamicStudentFormSerializer, self).__init__(*args, **kwargs)
         if exclude_content:
             self.fields.pop('content', None)
+
+
+class BackgroundStatusSerializer(serializers.Serializer):
+    percentage = serializers.IntegerField()
+    completed_forms = serializers.ListField(child=serializers.CharField())
+    not_completed_forms = serializers.ListField(child=serializers.CharField())
+    personal_info = serializers.ChoiceField(
+        choices=[('completed', 'Completed'), ('not_completed', 'Not Completed')])
