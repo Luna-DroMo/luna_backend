@@ -32,5 +32,9 @@ urlpatterns = [
          views.StudentFormsView.as_view(), name="handle_student_forms"),
     path("<int:student_id>/background", views.get_background_status,
          name="get_background_status"),
-
+    path(
+        "getUserType/<int:id>",
+        views.getUserType,
+        name="get_user_type"
+    )
 ]
