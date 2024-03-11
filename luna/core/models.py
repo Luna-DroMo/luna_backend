@@ -1,12 +1,11 @@
 from django.db import models
 from django.utils import timezone
-from core.customFields import *
+from core.customFields import DayOfTheWeekField
 from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
     BaseUserManager,
 )
-
 """
 Django by default supports login via username and password. To implement the functionality to login via email,
 we need to create a custom user.
@@ -163,7 +162,7 @@ class StudentForm(models.Model):
 class Module(models.Model):
     name = models.CharField(max_length=255, null=True)
     faculty = models.ForeignKey(
-        'Faculty', on_delete=models.CASCADE, null=True)
+        'Faculty', on_delete=models.CASCADE, null=True, blank=True)
     owners = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -177,7 +176,7 @@ class Module(models.Model):
     survey_days = DayOfTheWeekField(null=True)
 
     def __str__(self):
-        return f"{self.name} ({self.module_id})"
+        return f"{self.name} ({self.id})"
 
 
 class StudentModule(models.Model):
