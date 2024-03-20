@@ -6,6 +6,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
     BaseUserManager,
 )
+
 """
 Django by default supports login via username and password. To implement the functionality to login via email,
 we need to create a custom user.
@@ -94,16 +95,14 @@ class StudentUser(models.Model):
         DE = "DE", "German"
         OTHER = "OTHER", "Other"
 
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     first_name = models.CharField(max_length=50, blank=True, null=True)
     middle_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50, blank=True, null=True)
     nickname = models.CharField(max_length=50, null=True)
     birth_date = models.DateField(null=True)
     abitur_note = models.IntegerField(null=True)
-    main_language = models.CharField(
-        choices=UserLanguages.choices, null=True)
+    main_language = models.CharField(choices=UserLanguages.choices, null=True)
     financial_support = models.BooleanField(null=True)
 
     def __str__(self):
@@ -120,40 +119,38 @@ class Form(models.Model):
     name = models.CharField(max_length=255)
     content = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by_user = models.ForeignKey('User', on_delete=models.CASCADE, null=True
-                                        )
+    created_by_user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
     # university = models.ForeignKey(
     #     'University', on_delete=models.CASCADE, null=True)
 
     class FormType(models.TextChoices):
-        EQ = 'EQ', 'EQ'
-        IQ = 'IQ', 'IQ'
-        AIST = 'AIST', 'AIST'
+        EQ = "EQ", "EQ"
+        IQ = "IQ", "IQ"
+        AIST = "AIST", "AIST"
 
     form_type = models.CharField(
-        max_length=50,
-        choices=FormType.choices,
-        default=FormType.EQ
+        max_length=50, choices=FormType.choices, default=FormType.EQ
     )
 
 
 class StudentForm(models.Model):
-    student = models.ForeignKey('StudentUser', on_delete=models.CASCADE)
-    form = models.ForeignKey('Form', on_delete=models.CASCADE)
+    student = models.ForeignKey("StudentUser", on_delete=models.CASCADE)
+    form = models.ForeignKey("Form", on_delete=models.CASCADE)
     submitted_at = models.DateTimeField(null=True, default=None)
 
     class ResolutionStatus(models.TextChoices):
-        COMPLETED = 'COMPLETED', 'Completed'
-        NOT_COMPLETED = 'NOT_COMPLETED', 'Not Completed'
+        COMPLETED = "COMPLETED", "Completed"
+        NOT_COMPLETED = "NOT_COMPLETED", "Not Completed"
+
     resolution = models.CharField(
         max_length=20,
         choices=ResolutionStatus.choices,
-        default=ResolutionStatus.NOT_COMPLETED
+        default=ResolutionStatus.NOT_COMPLETED,
     )
     content = models.JSONField(null=True, default=None)
 
     class Meta:
-        unique_together = ('student', 'form')
+        unique_together = ("student", "form")
 
     def __str__(self):
         return f"{self.user} - {self.name}"
@@ -162,12 +159,13 @@ class StudentForm(models.Model):
 class Module(models.Model):
     name = models.CharField(max_length=255, null=True)
     faculty = models.ForeignKey(
-        'Faculty', on_delete=models.CASCADE, null=True, blank=True)
+        "Faculty", on_delete=models.CASCADE, null=True, blank=True
+    )
     owners = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
-        limit_choices_to=({'user_type': 2, 'user_type': 3})
+        limit_choices_to=({"user_type": 2, "user_type": 3}),
     )
     password = models.CharField(max_length=255, null=True)
     start_date = models.DateField(null=False, default=timezone.now)
@@ -180,33 +178,39 @@ class Module(models.Model):
 
 
 class StudentModule(models.Model):
-    class SurveyStatus(models.TextChoices):
-        NOT_STARTED = 'NOT_STARTED'
-        COMPLETED = 'COMPLETED'
 
-    student = models.ForeignKey('StudentUser', on_delete=models.CASCADE)
-    module = models.ForeignKey('Module', on_delete=models.CASCADE)
-    survey_status = models.CharField(
-        max_length=20,
-        choices=SurveyStatus.choices,
-        default=SurveyStatus.NOT_STARTED,
-        null=True
-    )
+    student = models.ForeignKey("StudentUser", on_delete=models.CASCADE)
+    module = models.ForeignKey("Module", on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('student', 'module')
+        unique_together = ("student", "module")
 
     def __str__(self):
         return f"{self.student} {self.module}"
 
 
-class StudentSurveys(models.Model):
+class StudentSurvey(models.Model):
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
     updated_at = models.DateTimeField(null=False, default=timezone.now)
-    module_id = models.ForeignKey('Module', on_delete=models.CASCADE)
-    student_id = models.ForeignKey('StudentUser', on_delete=models.CASCADE)
-    content = models.JSONField(null=True)
+    end_date = models.DateTimeField(null=False, default=timezone.now)
+    module = models.ForeignKey("Module", on_delete=models.CASCADE)
+    student = models.ForeignKey("StudentUser", on_delete=models.CASCADE)
+    content = models.JSONField(null=True, blank=True)
+
+    class SurveyStatus(models.TextChoices):
+        NOT_COMPLETED = "NOT_COMPLETED"
+        COMPLETED = "COMPLETED"
+
+    survey_status = models.CharField(
+        max_length=20,
+        choices=SurveyStatus.choices,
+        default=SurveyStatus.NOT_COMPLETED,
+        null=True,
+    )
+
+    class Meta:
+        unique_together = ("module", "student")
 
     def __str__(self):
         return f"{self.name}"
@@ -225,7 +229,7 @@ class Faculty(models.Model):
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
     updated_at = models.DateTimeField(null=False, default=timezone.now)
-    university_id = models.ForeignKey('University', on_delete=models.CASCADE)
+    university_id = models.ForeignKey("University", on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.name}"
