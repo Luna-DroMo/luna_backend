@@ -209,8 +209,13 @@ class StudentSurvey(models.Model):
         null=True,
     )
 
+    is_active = models.BooleanField(
+        default=True,
+        help_text="If set to False, the survey will not be visible to the student",
+    )
+
     class Meta:
-        unique_together = ("module", "student")
+        unique_together = ("module", "is_active")
 
     def __str__(self):
         return f"{self.name}"

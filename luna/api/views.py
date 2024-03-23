@@ -4,6 +4,7 @@ from rest_framework.decorators import (
     permission_classes,
 )
 from rest_framework.views import APIView
+from django.http import Http404
 from rest_framework.authentication import (
     SessionAuthentication,
     TokenAuthentication,
@@ -139,7 +140,13 @@ class StudentView(APIView):
 class SurveyView(APIView):
     def get(self, request, student_id, survey_id):
         student = get_object_or_404(StudentUser, pk=student_id)
-        survey = get_object_or_404(StudentSurvey, pk=survey_id)
+        try:
+            survey = StudentSurvey.objects.get(
+                pk=survey_id, student=student, is_active=True
+            )
+        except StudentSurvey.DoesNotExist:
+            raise Http404("No StudentSurvey matches the given query.")
+
         serializer = DisplaySurveySerializer(survey)
         return Response(serializer.data)
 
@@ -151,6 +158,8 @@ class SurveyView(APIView):
             return Response(
                 "Survey already completed.", status=status.HTTP_400_BAD_REQUEST
             )
+        if survey.is_active is False:
+            return Response("Survey is not active.", status=status.HTTP_400_BAD_REQUEST)
 
         serializer = StudentSurveySerializer(survey, data=request.data, partial=True)
         if serializer.is_valid():
