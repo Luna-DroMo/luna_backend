@@ -1,5 +1,13 @@
 from rest_framework import serializers
-from core.models import User, StudentUser, Module, Form, StudentModule, StudentForm
+from core.models import (
+    User,
+    StudentUser,
+    Module,
+    Form,
+    StudentModule,
+    StudentForm,
+    StudentSurvey,
+)
 from datetime import datetime
 
 
@@ -147,3 +155,25 @@ class BackgroundStatusSerializer(serializers.Serializer):
     personal_info = serializers.ChoiceField(
         choices=[("completed", "Completed"), ("not_completed", "Not Completed")]
     )
+
+
+class StudentSurveySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentSurvey
+        fields = "__all__"
+
+
+class DisplaySurveySerializer(serializers.ModelSerializer):
+    module_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = StudentSurvey
+        fields = [
+            "updated_at",
+            "module_name",
+            "content",
+            "survey_status",
+        ]
+
+    def get_module_name(self, obj):
+        return obj.module.name if obj.module else None

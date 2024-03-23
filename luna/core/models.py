@@ -192,7 +192,7 @@ class StudentModule(models.Model):
 class StudentSurvey(models.Model):
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
-    updated_at = models.DateTimeField(null=False, default=timezone.now)
+    updated_at = models.DateTimeField(null=False, auto_now=True)
     end_date = models.DateTimeField(null=False, default=timezone.now)
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
     student = models.ForeignKey("StudentUser", on_delete=models.CASCADE)

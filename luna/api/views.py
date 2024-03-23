@@ -10,17 +10,24 @@ from rest_framework.authentication import (
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from core.models import StudentUser, Module, StudentModule, Form, User, StudentForm
+from core.models import (
+    StudentUser,
+    Module,
+    StudentModule,
+    Form,
+    User,
+    StudentForm,
+    StudentSurvey,
+)
 from .serializers import (
     ModuleSerializer,
     FormSerializer,
     StudentModuleSerializer,
-    StudentFormSerializer,
     BackgroundFormSerializer,
-    DynamicStudentFormSerializer,
     StudentUserSerializer,
     BackgroundStatusSerializer,
-    EnrolledModulesSerializer,
+    StudentSurveySerializer,
+    DisplaySurveySerializer,
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -127,6 +134,29 @@ class StudentView(APIView):
         student = get_object_or_404(StudentUser, pk=student_id)
         serializer = StudentUserSerializer(student)
         return Response(serializer.data)
+
+
+class SurveyView(APIView):
+    def get(self, request, student_id, survey_id):
+        student = get_object_or_404(StudentUser, pk=student_id)
+        survey = get_object_or_404(StudentSurvey, pk=survey_id)
+        serializer = DisplaySurveySerializer(survey)
+        return Response(serializer.data)
+
+    def post(self, request, student_id, survey_id):
+        student = get_object_or_404(StudentUser, pk=student_id)
+        survey = get_object_or_404(StudentSurvey, pk=survey_id)
+
+        if survey.content is not None:
+            return Response(
+                "Survey already completed.", status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = StudentSurveySerializer(survey, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save(survey_status=StudentSurvey.SurveyStatus.COMPLETED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Function-based views defined below.
