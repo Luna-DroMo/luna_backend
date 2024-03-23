@@ -158,6 +158,7 @@ class StudentForm(models.Model):
 
 class Module(models.Model):
     name = models.CharField(max_length=255, null=True)
+    code = models.CharField(max_length=255, null=True)
     faculty = models.ForeignKey(
         "Faculty", on_delete=models.CASCADE, null=True, blank=True
     )

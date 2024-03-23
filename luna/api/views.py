@@ -29,6 +29,7 @@ from .serializers import (
     BackgroundStatusSerializer,
     StudentSurveySerializer,
     DisplaySurveySerializer,
+    StudentModuleSerializerWithSurveys,
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -47,12 +48,12 @@ class ModuleView(APIView):
     # permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        student_id = kwargs.get("student_id")
+        student_id = self.kwargs.get("student_id")
         student_modules = StudentModule.objects.filter(
             student_id=student_id
         ).select_related("module")
-        student_module_serializer = StudentModuleSerializer(student_modules, many=True)
-        return Response(student_module_serializer.data, status=status.HTTP_200_OK)
+        serializer = StudentModuleSerializerWithSurveys(student_modules, many=True)
+        return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         serializer = ModuleSerializer(data=request.data)
