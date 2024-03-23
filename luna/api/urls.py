@@ -19,9 +19,9 @@ urlpatterns = [
     ),
     path("student/save_form/<int:student_id>", views.save_form, name="save_form_data"),
     path("<int:student_id>/info", views.StudentView.as_view(), name="get_student_info"),
-    # path(
-    #     "<int:student_id>/modules", views.ModuleView.as_view(), name="student_modules"
-    # ),
+    path(
+        "<int:student_id>/modules", views.ModuleView.as_view(), name="student_modules"
+    ),
     path(
         "<int:student_id>/forms",
         views.StudentFormsView.as_view(),
@@ -53,4 +53,5 @@ urlpatterns = [
         views.SurveyView.as_view(),
         name="handle_survey",
     ),
+    path("<int:student_id>/modules", views.SurveyView.as_view(), name="get_surveys"),
 ]

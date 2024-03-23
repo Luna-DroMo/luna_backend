@@ -44,7 +44,7 @@ class TestView(APIView):
 
 
 class ModuleView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         student_id = kwargs.get("student_id")
