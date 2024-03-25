@@ -55,8 +55,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
-    # university_id = models.ForeignKey(
-    #     'University', on_delete=models.SET_NULL, null=True)
+    university = models.ForeignKey(
+        "University", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     class UserType(models.IntegerChoices):
         STUDENT = 1
@@ -158,6 +159,7 @@ class StudentForm(models.Model):
 
 class Module(models.Model):
     name = models.CharField(max_length=255, null=True)
+    code = models.CharField(max_length=255, null=True)
     faculty = models.ForeignKey(
         "Faculty", on_delete=models.CASCADE, null=True, blank=True
     )
@@ -192,7 +194,7 @@ class StudentModule(models.Model):
 class StudentSurvey(models.Model):
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
-    updated_at = models.DateTimeField(null=False, default=timezone.now)
+    updated_at = models.DateTimeField(null=False, auto_now=True)
     end_date = models.DateTimeField(null=False, default=timezone.now)
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
     student = models.ForeignKey("StudentUser", on_delete=models.CASCADE)
@@ -209,8 +211,13 @@ class StudentSurvey(models.Model):
         null=True,
     )
 
+    is_active = models.BooleanField(
+        default=True,
+        help_text="If set to False, the survey will not be visible to the student",
+    )
+
     class Meta:
-        unique_together = ("module", "student")
+        unique_together = ("module", "is_active")
 
     def __str__(self):
         return f"{self.name}"
@@ -219,17 +226,17 @@ class StudentSurvey(models.Model):
 class University(models.Model):
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
-    updated_at = models.DateTimeField(null=False, default=timezone.now)
+    updated_at = models.DateTimeField(null=False, default=timezone.now, blank=True)
 
     def __str__(self):
-        return f"{self.module} {self.university}"
+        return f"{self.name}"
 
 
 class Faculty(models.Model):
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
     updated_at = models.DateTimeField(null=False, default=timezone.now)
-    university_id = models.ForeignKey("University", on_delete=models.CASCADE)
+    university = models.ForeignKey("University", on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.name}"
