@@ -7,9 +7,8 @@ networks:
 services:
   web:
     image: "caodoe/luna_backend-web:latest"
-    build: .
     ports:
-      - "80:8000"
+      - "8080:8000"
     depends_on:
       - db
     env_file:
