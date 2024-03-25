@@ -4,23 +4,36 @@ from rest_framework.decorators import (
     permission_classes,
 )
 from rest_framework.views import APIView
+from django.http import Http404
 from rest_framework.authentication import (
     SessionAuthentication,
     TokenAuthentication,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from core.models import StudentUser, Module, StudentModule, Form, User, StudentForm
+from core.models import (
+    StudentUser,
+    Module,
+    StudentModule,
+    Form,
+    User,
+    StudentForm,
+    StudentSurvey,
+    University,
+    Faculty,
+)
 from .serializers import (
     ModuleSerializer,
     FormSerializer,
     StudentModuleSerializer,
-    StudentFormSerializer,
     BackgroundFormSerializer,
-    DynamicStudentFormSerializer,
     StudentUserSerializer,
     BackgroundStatusSerializer,
-    EnrolledModulesSerializer,
+    StudentSurveySerializer,
+    DisplaySurveySerializer,
+    StudentModuleSerializerWithSurveys,
+    UniversitySerializer,
+    FacultySerializer,
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -36,15 +49,15 @@ class TestView(APIView):
 
 
 class ModuleView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        student_id = kwargs.get("student_id")
+        student_id = self.kwargs.get("student_id")
         student_modules = StudentModule.objects.filter(
             student_id=student_id
         ).select_related("module")
-        student_module_serializer = StudentModuleSerializer(student_modules, many=True)
-        return Response(student_module_serializer.data, status=status.HTTP_200_OK)
+        serializer = StudentModuleSerializerWithSurveys(student_modules, many=True)
+        return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
         serializer = ModuleSerializer(data=request.data)
@@ -127,6 +140,37 @@ class StudentView(APIView):
         student = get_object_or_404(StudentUser, pk=student_id)
         serializer = StudentUserSerializer(student)
         return Response(serializer.data)
+
+
+class SurveyView(APIView):
+    def get(self, request, student_id, survey_id):
+        student = get_object_or_404(StudentUser, pk=student_id)
+        try:
+            survey = StudentSurvey.objects.get(
+                pk=survey_id, student=student, is_active=True
+            )
+        except StudentSurvey.DoesNotExist:
+            raise Http404("No StudentSurvey matches the given query.")
+
+        serializer = DisplaySurveySerializer(survey)
+        return Response(serializer.data)
+
+    def post(self, request, student_id, survey_id):
+        student = get_object_or_404(StudentUser, pk=student_id)
+        survey = get_object_or_404(StudentSurvey, pk=survey_id)
+
+        if survey.content is not None:
+            return Response(
+                "Survey already completed.", status=status.HTTP_400_BAD_REQUEST
+            )
+        if survey.is_active is False:
+            return Response("Survey is not active.", status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = StudentSurveySerializer(survey, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save(survey_status=StudentSurvey.SurveyStatus.COMPLETED)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Function-based views defined below.
@@ -240,7 +284,6 @@ def get_studentusers(request, email):
         return Response(serializer.data)
 
 
-# Update the information of a student user
 @api_view(["PATCH"])
 def update_studentuser_with_email(request, email):
     try:
@@ -311,4 +354,52 @@ def get_student_modules(request, student_id):
 
     # serializer = EnrolledModulesSerializer(modules, many=True)
     serializer = ModuleSerializer(modules, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_all_universities(request):
+    universities = University.objects.all()
+    serializer = UniversitySerializer(universities, many=True)
+    print(serializer.data)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_university_faculties(request, university_id):
+    university = get_object_or_404(University, pk=university_id)
+    faculties = Faculty.objects.filter(university=university)
+    serializer = FacultySerializer(faculties, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_lecturer_modules(request, lecturer_id):
+    lecturer = get_object_or_404(User, pk=lecturer_id)
+    modules = Module.objects.filter(owners_id=lecturer)
+    serializer = ModuleSerializer(modules, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_module_details(request, module_id):
+    module = get_object_or_404(Module, pk=module_id)
+    serializer = ModuleSerializer(module)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_available_modules(request, student_id):
+
+    try:
+        student_user = StudentUser.objects.get(user=student_id)
+    except StudentUser.DoesNotExist:
+        return Response({"error": "Student user not found"}, status=404)
+
+    current_date = timezone.now().date()
+    student_modules = StudentModule.objects.filter(
+        student=student_user, module__start_date__lte=current_date
+    ).select_related("module")
+
+    serializer = ModuleSerializer([sm.module for sm in student_modules], many=True)
     return Response(serializer.data)

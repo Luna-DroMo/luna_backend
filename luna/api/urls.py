@@ -19,9 +19,9 @@ urlpatterns = [
     ),
     path("student/save_form/<int:student_id>", views.save_form, name="save_form_data"),
     path("<int:student_id>/info", views.StudentView.as_view(), name="get_student_info"),
-    # path(
-    #     "<int:student_id>/modules", views.ModuleView.as_view(), name="student_modules"
-    # ),
+    path(
+        "<int:student_id>/modules", views.ModuleView.as_view(), name="student_modules"
+    ),
     path(
         "<int:student_id>/forms",
         views.StudentFormsView.as_view(),
@@ -47,5 +47,32 @@ urlpatterns = [
         "<int:student_id>/modules",
         views.get_student_modules,
         name="get_student_modules",
+    ),
+    path(
+        "<int:student_id>/surveys/<int:survey_id>",
+        views.SurveyView.as_view(),
+        name="handle_survey",
+    ),
+    path("<int:student_id>/modules", views.SurveyView.as_view(), name="get_surveys"),
+    path(
+        "universities",
+        views.get_all_universities,
+        name="get_universities",
+    ),
+    path(
+        "universities/<int:university_id>",
+        views.get_university_faculties,
+        name="get_university_faculties",
+    ),
+    path(
+        "lecturer/<int:lecturer_id>/modules",
+        views.get_lecturer_modules,
+        name="get_lecturer_modules",
+    ),
+    path("module/<int:module_id>", views.get_module_details, name="get_module_details"),
+    path(
+        "<int:student_id>/modules/available",
+        views.get_available_modules,
+        name="get_available_modules",
     ),
 ]

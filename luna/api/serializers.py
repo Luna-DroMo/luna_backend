@@ -1,5 +1,15 @@
 from rest_framework import serializers
-from core.models import User, StudentUser, Module, Form, StudentModule, StudentForm
+from core.models import (
+    User,
+    StudentUser,
+    Module,
+    Form,
+    StudentModule,
+    StudentForm,
+    StudentSurvey,
+    University,
+    Faculty,
+)
 from datetime import datetime
 
 
@@ -28,7 +38,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
-        fields = "__all__"
+        exclude = ("password",)
 
 
 class FormSerializer(serializers.ModelSerializer):
@@ -147,3 +157,83 @@ class BackgroundStatusSerializer(serializers.Serializer):
     personal_info = serializers.ChoiceField(
         choices=[("completed", "Completed"), ("not_completed", "Not Completed")]
     )
+
+
+class StudentSurveySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentSurvey
+        fields = "__all__"
+
+
+class DisplaySurveySerializer(serializers.ModelSerializer):
+    module_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = StudentSurvey
+        fields = [
+            "updated_at",
+            "module_name",
+            "content",
+            "survey_status",
+        ]
+
+    def get_module_name(self, obj):
+        return obj.module.name if obj.module else None
+
+
+class StudentModuleSerializerWithSurveys(serializers.Serializer):
+
+    module_name = serializers.CharField(source="module.name", read_only=True)
+    module_code = serializers.CharField(source="module.code", read_only=True)
+    survey_end_date = serializers.SerializerMethodField()
+    survey_is_active = serializers.SerializerMethodField()
+    survey_created_at = serializers.SerializerMethodField()
+    survey_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StudentModule
+        fields = [
+            "module_name",
+            "module_code",
+            "survey_end_date",
+            "survey_is_active",
+            "survey_created_at",
+            "survey_id",
+        ]
+
+    def get_survey_end_date(self, obj):
+        survey = StudentSurvey.objects.filter(
+            student=obj.student, module=obj.module, is_active=True
+        ).first()
+        return survey.end_date if survey else None
+
+    def get_survey_is_active(self, obj):
+        survey = StudentSurvey.objects.filter(
+            student=obj.student, module=obj.module, is_active=True
+        ).first()
+        return survey.is_active if survey else False
+
+    def get_survey_created_at(self, obj):
+        survey = StudentSurvey.objects.filter(
+            student=obj.student, module=obj.module, is_active=True
+        ).first()
+        return survey.created_at if survey else None
+
+    def get_survey_id(self, obj):
+        survey = StudentSurvey.objects.filter(
+            student=obj.student, module=obj.module, is_active=True
+        ).first()
+        return survey.id if survey else None
+
+
+class UniversitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = University
+        fields = ["id", "name"]
+
+
+class FacultySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Faculty
+        fields = "__all__"
