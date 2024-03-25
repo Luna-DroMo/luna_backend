@@ -10,7 +10,6 @@ urlpatterns = [
     ),
     path("student/<int:student_id>/modules",
          views.get_student_modules, name="get_student_modules"),
-    path("handle_post", views.handle_post, name="handle_post"),
     path(
         "get_all_studentusers",
         views.get_studentusers,
@@ -21,15 +20,21 @@ urlpatterns = [
         views.save_form, name="save_form_data"
     ),
     path(
-        "getUserType/<int:id>",
-        views.getUserType,
-        name="get_user_type"
+        "<int:student_id>/info",
+        views.StudentView.as_view(), name="get_student_info"
     ),
 
     path('<int:student_id>/modules',
          ModuleView.as_view(), name='student_modules'),
     path("<int:student_id>/forms", views.StudentFormsView.as_view(),
          name="get_all_student_forms"),
-    path("<int:student_id>/forms/<str:identifier>",
-         views.StudentFormsView.as_view(), name="get_student_forms_by_identifier"),
+    path("<int:student_id>/forms/<int:form_id>",
+         views.StudentFormsView.as_view(), name="handle_student_forms"),
+    path("<int:student_id>/background", views.get_background_status,
+         name="get_background_status"),
+    path(
+        "getUserType/<int:id>",
+        views.getUserType,
+        name="get_user_type"
+    )
 ]

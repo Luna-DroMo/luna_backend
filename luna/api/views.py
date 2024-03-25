@@ -11,13 +11,11 @@ from rest_framework.authentication import (
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from core.models import StudentUser, Module, StudentModule, Form, User, StudentForm
-from core.serializers import StudentUserSerializer
-from .serializers import ModuleSerializer, FormSerializer, StudentModuleSerializer, StudentFormSerializer, DetailedStudentFormSerializer, DynamicStudentFormSerializer
+from .serializers import ModuleSerializer, FormSerializer, StudentModuleSerializer, StudentFormSerializer, BackgroundFormSerializer, DynamicStudentFormSerializer, StudentUserSerializer, BackgroundStatusSerializer
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-
-import json
-from django.http import JsonResponse
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 class TestView(APIView):
@@ -47,82 +45,114 @@ class ModuleView(APIView):
 
 
 class StudentFormsView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, student_id, identifier=None):
-
-        student = get_object_or_404(StudentUser, pk=student_id)
-
-        if identifier is None:
-            student_forms = StudentForm.objects.filter(student_id=student_id)
-            serializer = DynamicStudentFormSerializer(
-                student_forms, many=True, context={'exclude_content': True})
-            return Response(serializer.data)
-
+    # permission_classes = [IsAuthenticated]
+    def get(self, request, student_id, form_id):
         try:
-            form_id = int(identifier)
-            student_forms = StudentForm.objects.get(
-                student_id=student_id, id=form_id)
-            serializer = DetailedStudentFormSerializer(student_forms)
-        except ValueError:
-            if identifier not in dict(Form.FormType.choices):
-                return Response({'error': 'Invalid form_type'}, status=status.HTTP_400_BAD_REQUEST)
-            student_forms = StudentForm.objects.filter(
-                student_id=student_id, form__form_type=identifier)
-            serializer = DetailedStudentFormSerializer(
-                student_forms, many=True)
+            student = StudentUser.objects.get(pk=student_id)
+        except StudentUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-        return Response(serializer.data)
-
-    def post(self, request, student_id, identifier=None):
-        if identifier is not None:
-            return Response({'error': 'Invalid request while submitting the form.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        data = request.data
-        form_type = data.get('form_type')
-
-        # Fetch the existing StudentForm instance using student_id and form_type
-        try:
-            student_form = StudentForm.objects.get(
-                student_id=student_id,  # Use the correct field name as per your model definition
-                form__form_type=form_type  # This assumes `form` is the ForeignKey to the Form model
-            )
-        except StudentForm.DoesNotExist:
-            return Response({"error": "Student form not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Serialize data to update the existing StudentForm instance
-        serializer = StudentFormSerializer(
-            student_form, data=data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"success": "Form updated successfully"}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def handle_form_by_id(self, request, student_id, form_identifier):
         try:
             student_form = StudentForm.objects.select_related('form').get(
-                student_id=student_id, form_id=form_identifier
+                student_id=student_id, form_id=form_id
             )
-            serializer = DetailedStudentFormSerializer(student_form)
+            serializer = BackgroundFormSerializer(student_form)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except StudentForm.DoesNotExist:
             return Response({'error': 'Student form not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+    def post(self, request, student_id, form_id):
+
+        try:
+            student = StudentUser.objects.get(pk=student_id)
+        except StudentUser.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            student_form = StudentForm.objects.select_related(
+                'form').get(student_id=student_id, form_id=form_id)
+
+            question_ids = {question["question_id"]
+                            for question in student_form.form.content["questions"]}
+
+            submitted_responses = request.data
+            submitted_question_ids = {
+                response["question_id"] for response in submitted_responses}
+
+            if question_ids != submitted_question_ids:
+                return Response({"error": "All questions must be answered."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if student_form.content:
+                return Response({"error": "Response already submitted."}, status=status.HTTP_400_BAD_REQUEST)
+
+            student_form.content = submitted_responses
+            student_form.resolution = 'COMPLETED'
+            student_form.submitted_at = timezone.now()
+            student_form.save()
+
+            return Response({"message": "Form submitted successfully."})
+
+        except StudentForm.DoesNotExist:
+            return Response({"error": "Student form not found."}, status=status.HTTP_404_NOT_FOUND)
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class StudentView(APIView):
+    def get(self, request, student_id):
+        student = get_object_or_404(StudentUser, pk=student_id)
+        serializer = StudentUserSerializer(student)
+        return Response(serializer.data)
+
 
 # Function-based views defined below.
-@api_view(['POST'])
-def handle_post(request):
-    data = json.loads(request.body)
-    print(data)
-    return JsonResponse({"status": "success", "data_received": data})
+@api_view(["GET"])
+# @permission_classes([IsAuthenticated])
+def get_background_status(request, student_id):
+    try:
+        student = StudentUser.objects.get(pk=student_id)
+    except StudentUser.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
+    student_forms = StudentForm.objects.filter(
+        student_id=student_id).select_related('form')
+    total_forms = student_forms.count()
 
-@api_view(['POST'])
-def handle_post(request):
-    data = json.loads(request.body)
-    print(data)
-    return JsonResponse({"status": "success", "data_received": data})
+    completed_forms = student_forms.filter(
+        resolution=StudentForm.ResolutionStatus.COMPLETED)
+    not_completed_forms = student_forms.exclude(
+        resolution=StudentForm.ResolutionStatus.COMPLETED)
+
+    completed_form_types = [form.form.form_type for form in completed_forms]
+    not_completed_form_types = [
+        form.form.form_type for form in not_completed_forms]
+
+    percentage = int((len(completed_form_types) / total_forms)
+                     * 100) if total_forms > 0 else 0
+
+    personal_info_fields = [
+        student.first_name,
+        student.last_name,
+        student.birth_date,
+        student.abitur_note,
+        student.main_language,
+        student.financial_support,
+    ]
+    personal_info = all(field is not None for field in personal_info_fields)
+
+    data = {
+        "personal_info": "completed" if personal_info else "not_completed",
+        "percentage": percentage,
+        "completed_forms": completed_form_types,
+        "not_completed_forms": not_completed_form_types,
+    }
+
+    serializer = BackgroundStatusSerializer(data=data)
+
+    if serializer.is_valid():
+        return Response(serializer.data)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["PATCH"])
