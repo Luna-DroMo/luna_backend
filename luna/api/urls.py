@@ -64,4 +64,15 @@ urlpatterns = [
         views.get_university_faculties,
         name="get_university_faculties",
     ),
+    path(
+        "lecturer/<int:lecturer_id>/modules",
+        views.get_lecturer_modules,
+        name="get_lecturer_modules",
+    ),
+    path("module/<int:module_id>", views.get_module_details, name="get_module_details"),
+    path(
+        "<int:student_id>/modules/available",
+        views.get_available_modules,
+        name="get_available_modules",
+    ),
 ]

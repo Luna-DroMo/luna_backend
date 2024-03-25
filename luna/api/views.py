@@ -371,3 +371,35 @@ def get_university_faculties(request, university_id):
     faculties = Faculty.objects.filter(university=university)
     serializer = FacultySerializer(faculties, many=True)
     return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_lecturer_modules(request, lecturer_id):
+    lecturer = get_object_or_404(User, pk=lecturer_id)
+    modules = Module.objects.filter(owners_id=lecturer)
+    serializer = ModuleSerializer(modules, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_module_details(request, module_id):
+    module = get_object_or_404(Module, pk=module_id)
+    serializer = ModuleSerializer(module)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_available_modules(request, student_id):
+
+    try:
+        student_user = StudentUser.objects.get(user=student_id)
+    except StudentUser.DoesNotExist:
+        return Response({"error": "Student user not found"}, status=404)
+
+    current_date = timezone.now().date()
+    student_modules = StudentModule.objects.filter(
+        student=student_user, module__start_date__lte=current_date
+    ).select_related("module")
+
+    serializer = ModuleSerializer([sm.module for sm in student_modules], many=True)
+    return Response(serializer.data)
