@@ -54,4 +54,14 @@ urlpatterns = [
         name="handle_survey",
     ),
     path("<int:student_id>/modules", views.SurveyView.as_view(), name="get_surveys"),
+    path(
+        "universities",
+        views.get_all_universities,
+        name="get_universities",
+    ),
+    path(
+        "universities/<int:university_id>",
+        views.get_university_faculties,
+        name="get_university_faculties",
+    ),
 ]

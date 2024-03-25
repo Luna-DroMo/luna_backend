@@ -55,8 +55,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
-    # university_id = models.ForeignKey(
-    #     'University', on_delete=models.SET_NULL, null=True)
+    university = models.ForeignKey(
+        "University", on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     class UserType(models.IntegerChoices):
         STUDENT = 1
@@ -225,17 +226,17 @@ class StudentSurvey(models.Model):
 class University(models.Model):
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
-    updated_at = models.DateTimeField(null=False, default=timezone.now)
+    updated_at = models.DateTimeField(null=False, default=timezone.now, blank=True)
 
     def __str__(self):
-        return f"{self.module} {self.university}"
+        return f"{self.name}"
 
 
 class Faculty(models.Model):
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
     updated_at = models.DateTimeField(null=False, default=timezone.now)
-    university_id = models.ForeignKey("University", on_delete=models.CASCADE)
+    university = models.ForeignKey("University", on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.name}"

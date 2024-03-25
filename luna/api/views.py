@@ -19,6 +19,8 @@ from core.models import (
     User,
     StudentForm,
     StudentSurvey,
+    University,
+    Faculty,
 )
 from .serializers import (
     ModuleSerializer,
@@ -30,6 +32,8 @@ from .serializers import (
     StudentSurveySerializer,
     DisplaySurveySerializer,
     StudentModuleSerializerWithSurveys,
+    UniversitySerializer,
+    FacultySerializer,
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -280,7 +284,6 @@ def get_studentusers(request, email):
         return Response(serializer.data)
 
 
-# Update the information of a student user
 @api_view(["PATCH"])
 def update_studentuser_with_email(request, email):
     try:
@@ -351,4 +354,20 @@ def get_student_modules(request, student_id):
 
     # serializer = EnrolledModulesSerializer(modules, many=True)
     serializer = ModuleSerializer(modules, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_all_universities(request):
+    universities = University.objects.all()
+    serializer = UniversitySerializer(universities, many=True)
+    print(serializer.data)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_university_faculties(request, university_id):
+    university = get_object_or_404(University, pk=university_id)
+    faculties = Faculty.objects.filter(university=university)
+    serializer = FacultySerializer(faculties, many=True)
     return Response(serializer.data)

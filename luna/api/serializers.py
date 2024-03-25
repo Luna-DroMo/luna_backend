@@ -7,6 +7,8 @@ from core.models import (
     StudentModule,
     StudentForm,
     StudentSurvey,
+    University,
+    Faculty,
 )
 from datetime import datetime
 
@@ -222,3 +224,16 @@ class StudentModuleSerializerWithSurveys(serializers.Serializer):
             student=obj.student, module=obj.module, is_active=True
         ).first()
         return survey.id if survey else None
+
+
+class UniversitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = University
+        fields = ["id", "name"]
+
+
+class FacultySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Faculty
+        fields = "__all__"
