@@ -405,3 +405,12 @@ def get_available_modules(request, student_id):
 
     serializer = ModuleSerializer([sm.module for sm in available_modules], many=True)
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+def create_module(request, format=None):
+    serializer = ModuleSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

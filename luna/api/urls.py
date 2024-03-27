@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    
     path(
         "update_student/<int:pk>/",
         views.update_studentuser_with_id,
@@ -75,4 +76,6 @@ urlpatterns = [
         views.get_available_modules,
         name="get_available_modules",
     ),
+    path("createModule", views.create_module),
+   
 ]
