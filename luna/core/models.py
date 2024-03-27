@@ -6,12 +6,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
     BaseUserManager,
 )
-
-"""
-Django by default supports login via username and password. To implement the functionality to login via email,
-we need to create a custom user.
-For more information, google this thing. Also study the difference between AbstractUser and AbstractBaseUser.
-"""
+from django.db.models import Q
 
 
 class CustomUserManager(BaseUserManager):
@@ -167,7 +162,9 @@ class Module(models.Model):
         User,
         on_delete=models.SET_NULL,
         null=True,
-        limit_choices_to=({"user_type": 2, "user_type": 3}),
+        blank=True,  # Add this if you want to allow the field to be blank
+        limit_choices_to=Q(user_type=User.UserType.LECTURER)
+        | Q(user_type=User.UserType.ADMIN),
     )
     password = models.CharField(max_length=255, null=True)
     start_date = models.DateField(null=False, default=timezone.now)
