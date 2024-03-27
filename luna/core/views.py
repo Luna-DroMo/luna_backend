@@ -42,7 +42,7 @@ def signup(request):
             user_type=request.data["user_type"],
             first_name=request.data["first_name"],
             last_name=request.data["last_name"],
-            faculty=request.data["faculty_id"],  # Comment out if cause any problem.
+            university=request.data["university"],  # Comment out if cause any problem.
         )
         user.set_password(request.data["password"])
         user.save()
