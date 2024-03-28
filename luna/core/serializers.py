@@ -13,7 +13,6 @@ class StudentUserSerializer(serializers.ModelSerializer):
         model = StudentUser
         fields = "__all__"
 
-    # To allow partial updates
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

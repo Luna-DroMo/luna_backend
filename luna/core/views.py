@@ -11,7 +11,7 @@ from django.shortcuts import render
 
 
 def landing(request):
-    return render(request, 'core/index.html')
+    return render(request, "core/index.html")
 
 
 @api_view(["POST"])
@@ -42,6 +42,7 @@ def signup(request):
             user_type=request.data["user_type"],
             first_name=request.data["first_name"],
             last_name=request.data["last_name"],
+            university=request.data["university"],  # Comment out if cause any problem.
         )
         user.set_password(request.data["password"])
         user.save()

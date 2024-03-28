@@ -20,10 +20,8 @@ class DayOfTheWeekField(models.CharField):
 
     def to_python(self, value):
         if isinstance(value, list):
-            return value
-        if value:
-            return value.split(',')
-        return []
+            return value[0] if value else None
+        return value
 
     def get_prep_value(self, value):
         if isinstance(value, list):
