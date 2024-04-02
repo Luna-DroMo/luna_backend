@@ -408,9 +408,9 @@ def get_available_modules(request, student_id):
 
 
 @api_view(["POST"])
-def create_module(request, format=None):
-    serializer = ModuleSerializer(data=request.data)
+def create_module(request, user_id):
+    serializer = ModuleSerializer(data=request.data, partial=True)
     if serializer.is_valid():
-        serializer.save()
+        serializer.save(owners_id=user_id)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
