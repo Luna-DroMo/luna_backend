@@ -75,4 +75,5 @@ urlpatterns = [
         views.get_available_modules,
         name="get_available_modules",
     ),
+    path("<int:user_id>/module/create", views.create_module),
 ]

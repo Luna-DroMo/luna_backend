@@ -396,9 +396,19 @@ def get_available_modules(request, student_id):
     except StudentUser.DoesNotExist:
         return Response({"error": "Student user not found"}, status=404)
 
+
     available_modules = Module.objects.filter(
         faculty__university=student_user.user.university,
     )
 
     serializer = ModuleSerializer([sm for sm in available_modules], many=True)
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+def create_module(request, user_id):
+    serializer = ModuleSerializer(data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save(owners_id=user_id)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

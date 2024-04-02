@@ -9,7 +9,7 @@ echo "Waiting for database."
 ./wait-for-it.sh db:5432 -t 60
 
 # Run database migrations
-python3 manage.py makemigrations
+# python3 manage.py makemigrations # This part can cause some conflicts some commented out.
 python3 manage.py migrate
 
 # Start the Django server
