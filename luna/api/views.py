@@ -396,14 +396,12 @@ def get_available_modules(request, student_id):
     except StudentUser.DoesNotExist:
         return Response({"error": "Student user not found"}, status=404)
 
-    # Filter modules by student's university and ensure they are within the active date range.
+
     available_modules = Module.objects.filter(
         faculty__university=student_user.user.university,
-    ).exclude(
-        studentmodule__student=student_user  # Assuming `studentmodule` is the related name for the relationship.
     )
 
-    serializer = ModuleSerializer([sm.module for sm in available_modules], many=True)
+    serializer = ModuleSerializer([sm for sm in available_modules], many=True)
     return Response(serializer.data)
 
 
