@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from .serializers import UserSerializer
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from .models import User
+from .models import User, StudentUser
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 
@@ -24,12 +24,19 @@ def login(request):
         )
     token, _ = Token.objects.get_or_create(user=user)
     serializer = UserSerializer(instance=user)
-    return Response(
-        {
-            "token": token.key,
-            "user": serializer.data,
-        }
-    )
+
+    response_data = {
+        "token": token.key,
+        "user": serializer.data,
+    }
+
+    try:
+        student_user = StudentUser.objects.get(user=user)
+        response_data["student_id"] = student_user.pk
+    except StudentUser.DoesNotExist:
+        pass
+
+    return Response(response_data)
 
 
 @api_view(["POST"])
@@ -42,7 +49,7 @@ def signup(request):
             user_type=request.data["user_type"],
             first_name=request.data["first_name"],
             last_name=request.data["last_name"],
-            faculty=request.data["faculty_id"],  # Comment out if cause any problem.
+            university=request.data["university"],  # Comment out if cause any problem.
         )
         user.set_password(request.data["password"])
         user.save()
