@@ -75,4 +75,9 @@ urlpatterns = [
         views.get_available_modules,
         name="get_available_modules",
     ),
+    path(
+        "<int:student_id>/university/modules",
+        views.get_university_modules,
+        name="get_university_modules",
+    ),
 ]
