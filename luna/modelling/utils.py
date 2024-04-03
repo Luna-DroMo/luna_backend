@@ -28,21 +28,27 @@ def run_model(student_id, module_id):
         kalman_filter = KalmanFilter()
 
         predictions_state, predictions_cov, predictions_obs = kalman_filter.forward(
-            data
+            data  # eg np.array([[2], [3], [1]])
         )
         state_smooth, cov_smooth, K = kalman_filter.rts_smoother(
             predictions_state, predictions_cov
+        )
+
+        SurveyNumber_T = StudentSurvey.objects.last(
+            student_id=student_id, module_id=module_id
         )
 
         for state, covariance in zip(predictions_state, predictions_cov):
             Results.objects.create(
                 student=student_instance,
                 module=module_instance,
-                smoothed_output=state.tolist(),  # Adjust based on actual mapping
-                raw_output=covariance.tolist(),  # Adjust based on actual mapping
-                SurveyNumber_T=survey_number_t,
+                smoothed_output=state_smooth,  # Adjust based on actual mapping
+                raw_output=predictions_state,  # Adjust based on actual mapping
+                SurveyNumber_T=survey_number_t.id,
                 time_evaluated=timezone.now(),  # This is automatically handled by auto_now_add=True
             )
         print("Model run successfully")
+        return True
     except Exception as e:
-        return Response(print(e))
+        print(str(e))
+        return False
