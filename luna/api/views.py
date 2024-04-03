@@ -34,6 +34,7 @@ from .serializers import (
     StudentModuleSerializerWithSurveys,
     UniversitySerializer,
     FacultySerializer,
+    ModuleEnrollmentSerializer,
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -311,36 +312,37 @@ def getUserType(request, id):
 
 @api_view(["POST"])
 # @permission_classes([IsAuthenticated])
-def enroll_module(request, student_id, module_id):
+def enroll_module(request, student_id):
 
-    try:
-        student = StudentUser.objects.get(pk=student_id)
-    except StudentUser.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    serializer = ModuleEnrollmentSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        module = Module.objects.get(pk=module_id)
-    except Module.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+    module_code = serializer.validated_data["module_code"]
+    password = serializer.validated_data["password"]
 
-    password = request.data.get("password")
+    student = get_object_or_404(StudentUser, pk=student_id)
+    module = Module.objects.filter(code=module_code).first()
+    if not module:
+        return Response(
+            {"error": "Module not found."}, status=status.HTTP_404_NOT_FOUND
+        )
 
     if module.password != password:
         return Response(
             {"error": "Incorrect password."}, status=status.HTTP_400_BAD_REQUEST
         )
 
+    # Check if the student is already enrolled in the module
     if StudentModule.objects.filter(student=student, module=module).exists():
         return Response(
             {"error": "Student is already registered for this module."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    student_module = StudentModule(student=student, module=module)
-    student_module.save()
-
-    serializer = StudentModuleSerializer(student_module)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    student_module = StudentModule.objects.create(student=student, module=module)
+    response_serializer = StudentModuleSerializer(student_module)
+    return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(["GET"])
@@ -396,7 +398,6 @@ def get_available_modules(request, student_id):
     except StudentUser.DoesNotExist:
         return Response({"error": "Student user not found"}, status=404)
 
-
     available_modules = Module.objects.filter(
         faculty__university=student_user.user.university,
     )
@@ -412,3 +413,12 @@ def create_module(request, user_id):
         serializer.save(owners_id=user_id)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+def get_university_modules(request, student_id):
+    student = get_object_or_404(StudentUser, pk=student_id)
+    university = get_object_or_404(University, pk=student.user.university_id)
+    modules = Module.objects.filter(university=university)
+    serializer = ModuleSerializer(modules, many=True)
+    return Response(serializer.data)
