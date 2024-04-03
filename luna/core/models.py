@@ -115,7 +115,9 @@ class Form(models.Model):
     name = models.CharField(max_length=255)
     content = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by_user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
+    created_by_user = models.ForeignKey(
+        "User", on_delete=models.CASCADE, null=True
+    )  # Custom form logic
 
     class FormType(models.TextChoices):
         EQ = "EQ", "EQ"

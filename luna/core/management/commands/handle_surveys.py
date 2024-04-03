@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import timedelta
-from core.models import Module, StudentModule, StudentSurvey
+from core.models import Module, StudentSurvey
 
 
 class Command(BaseCommand):
@@ -9,23 +9,33 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        StudentSurvey.objects.update(isActive=False)
-        self.stdout.write(self.style.SUCCESS("All existing surveys set to inactive."))
+        # Get the current day number, 1=Monday through 7=Sunday
+        current_day = timezone.now().weekday() + 1
 
-        modules = Module.objects.all()
-        current_day = timezone.now().weekday()
+        # Get all modules that have a survey day matching today
+        modules_matching_today = Module.objects.filter(survey_days=current_day)
 
-        for module in modules:
-            if module.survey_days == current_day:
-                start_date = timezone.now().date()
-                end_date = start_date + timedelta(days=7)
-                StudentSurvey.objects.create(
-                    module=module,
-                    start_date=start_date,
-                    end_date=end_date,
-                    survey_status=StudentSurvey.SurveyStatus.NOT_COMPLETED,
-                    is_active=True,
+        for module in modules_matching_today:
+            # Set all current surveys for the module to inactive
+            StudentSurvey.objects.filter(module=module, is_active=True).update(
+                is_active=False
+            )
+
+            # Create a new active survey instance for the module
+            start_date = timezone.now().date()
+            end_date = start_date + timedelta(days=7)
+            StudentSurvey.objects.create(
+                module=module,
+                start_date=start_date,
+                end_date=end_date,
+                survey_status=StudentSurvey.SurveyStatus.NOT_COMPLETED,
+                is_active=True,
+            )
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"New active survey created for module: {module.name}"
                 )
-                self.stdout.write(
-                    self.style.SUCCESS(f"Survey created for module: {module.name}")
-                )
+            )
+
+        self.stdout.write(self.style.SUCCESS("Survey update process completed."))
