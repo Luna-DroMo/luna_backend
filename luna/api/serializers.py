@@ -38,7 +38,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
-        exclude = ("password", "owners", "id", "created_at")
+        exclude = ("password", "created_at")
 
 
 class FormSerializer(serializers.ModelSerializer):
