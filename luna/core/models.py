@@ -149,7 +149,7 @@ class StudentForm(models.Model):
         unique_together = ("student", "form")
 
     def __str__(self):
-        return f"{self.user} - {self.name}"
+        return f"{self.student} - {self.form}"
 
 
 class Module(models.Model):
