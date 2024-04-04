@@ -180,6 +180,15 @@ class Module(models.Model):
         max_length=2, choices=Semester.choices, blank=True, null=True, default=None
     )
 
+    class Status(models.TextChoices):
+        ACTIVE = "ACTIVE", "Active"
+        INACTIVE = "INACTIVE", "Inactive"
+
+    status = models.CharField(
+        choices=Status.choices,
+        default=Status.INACTIVE,
+    )
+
     def __str__(self):
         return f"{self.name} ({self.id})"
 
@@ -196,10 +205,14 @@ class StudentModule(models.Model):
 
 
 class StudentSurvey(models.Model):
+    class Meta:
+        unique_together = ("student", "module")
+
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
     updated_at = models.DateTimeField(null=False, auto_now=True)
-    end_date = models.DateTimeField(null=False, default=timezone.now)
+    start_date = models.DateTimeField(null=False, default=timezone.now)
+    end_date = models.DateTimeField(null=True, blank=True)
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
     student = models.ForeignKey("StudentUser", on_delete=models.CASCADE)
     content = models.JSONField(null=True, blank=True)
@@ -214,14 +227,7 @@ class StudentSurvey(models.Model):
         default=SurveyStatus.NOT_COMPLETED,
         null=True,
     )
-
-    is_active = models.BooleanField(
-        default=True,
-        help_text="If set to False, the survey will not be visible to the student",
-    )
-
-    class Meta:
-        unique_together = ("module", "is_active")
+    is_active = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name}"

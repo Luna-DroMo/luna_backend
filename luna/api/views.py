@@ -22,6 +22,7 @@ from core.models import (
     University,
     Faculty,
 )
+from rest_framework.parsers import JSONParser
 from .serializers import (
     ModuleSerializer,
     FormSerializer,
@@ -35,6 +36,7 @@ from .serializers import (
     UniversitySerializer,
     FacultySerializer,
     ModuleEnrollmentSerializer,
+    ActiveSurveySerializer,
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -156,6 +158,8 @@ class SurveyView(APIView):
         serializer = DisplaySurveySerializer(survey)
         return Response(serializer.data)
 
+    parser_classes = [JSONParser]
+
     def post(self, request, student_id, survey_id):
         student = get_object_or_404(StudentUser, pk=student_id)
         survey = get_object_or_404(StudentSurvey, pk=survey_id)
@@ -167,11 +171,20 @@ class SurveyView(APIView):
         if survey.is_active is False:
             return Response("Survey is not active.", status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = StudentSurveySerializer(survey, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save(survey_status=StudentSurvey.SurveyStatus.COMPLETED)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        content_array = request.data
+        if not isinstance(content_array, list):
+            return Response(
+                {"error": "Invalid data format. Array expected."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Update the survey's content with the array and mark it as completed
+        survey.content = content_array
+        survey.survey_status = StudentSurvey.SurveyStatus.COMPLETED
+        survey.save()
+
+        serializer = StudentSurveySerializer(survey)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # Function-based views defined below.
@@ -421,4 +434,12 @@ def get_university_modules(request, student_id):
     university = get_object_or_404(University, pk=student.user.university_id)
     modules = Module.objects.filter(university=university)
     serializer = ModuleSerializer(modules, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_active_surveys(request, student_id):
+    student = get_object_or_404(StudentUser, pk=student_id)
+    surveys = StudentSurvey.objects.filter(student=student, is_active=True)
+    serializer = ActiveSurveySerializer(surveys, many=True)
     return Response(serializer.data)

@@ -165,6 +165,25 @@ class StudentSurveySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ActiveSurveySerializer(serializers.ModelSerializer):
+    student = StudentUserSerializer()
+    module = ModuleSerializer()
+
+    class Meta:
+        model = StudentSurvey
+        fields = "__all__"
+
+    # module = serializers.SerializerMethodField()
+    # def get_module(self, obj):
+    #     # Manually construct the dictionary for the module information
+    #     # Adjust the fields according to what you need
+    #     return {
+    #         "id": obj.module.id,
+    #         "name": obj.module.name,
+    #         "code": obj.module.code,  # Assuming these fields exist on the Module model
+    #     }
+
+
 class DisplaySurveySerializer(serializers.ModelSerializer):
     module_name = serializers.SerializerMethodField(read_only=True)
 
