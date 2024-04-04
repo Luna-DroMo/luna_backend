@@ -327,12 +327,8 @@ def getUserType(request, id):
 # @permission_classes([IsAuthenticated])
 def enroll_module(request, student_id):
 
-    serializer = ModuleEnrollmentSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    module_code = serializer.validated_data["module_code"]
-    password = serializer.validated_data["password"]
+    module_code = request.data["module_code"]
+    password = request.data["password"]
 
     student = get_object_or_404(StudentUser, pk=student_id)
     module = Module.objects.filter(code=module_code).first()

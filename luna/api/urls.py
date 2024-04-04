@@ -83,6 +83,11 @@ urlpatterns = [
     path(
         "<int:student_id>/surveys/active",
         views.get_active_surveys,
-        name="get_active_surveys",
+        name="get_active_surveys"),
+    path(
+        "<int:user_id>/module/create",
+        views.create_module,
+        name="create_module",
+
     ),
 ]

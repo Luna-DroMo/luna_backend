@@ -115,9 +115,9 @@ class Form(models.Model):
     name = models.CharField(max_length=255)
     content = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by_user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
-    # university = models.ForeignKey(
-    #     'University', on_delete=models.CASCADE, null=True)
+    created_by_user = models.ForeignKey(
+        "User", on_delete=models.CASCADE, null=True
+    )  # Custom form logic
 
     class FormType(models.TextChoices):
         EQ = "EQ", "EQ"
@@ -127,6 +127,9 @@ class Form(models.Model):
     form_type = models.CharField(
         max_length=50, choices=FormType.choices, default=FormType.EQ
     )
+
+    def __str__(self):
+        return f"{self.name} - {self.created_by_user}"
 
 
 class StudentForm(models.Model):
@@ -149,7 +152,7 @@ class StudentForm(models.Model):
         unique_together = ("student", "form")
 
     def __str__(self):
-        return f"{self.user} - {self.name}"
+        return f"{self.student} - {self.form}"
 
 
 class Module(models.Model):

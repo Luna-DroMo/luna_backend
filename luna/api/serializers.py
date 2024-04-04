@@ -38,7 +38,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Module
-        exclude = ("password", "owners", "id", "created_at")
+        exclude = ("password", "created_at")
 
 
 class FormSerializer(serializers.ModelSerializer):
@@ -256,27 +256,3 @@ class FacultySerializer(serializers.ModelSerializer):
     class Meta:
         model = Faculty
         fields = "__all__"
-
-
-class ModuleEnrollmentSerializer(serializers.Serializer):
-    module_id = serializers.IntegerField()
-    student_id = serializers.IntegerField()
-
-    def validate(self, data):
-        module_id = data.get("module_id")
-        student_id = data.get("student_id")
-
-        if not Module.objects.filter(id=module_id).exists():
-            raise serializers.ValidationError("Module does not exist.")
-
-        if not StudentUser.objects.filter(id=student_id).exists():
-            raise serializers.ValidationError("Student does not exist.")
-
-        if StudentModule.objects.filter(
-            module_id=module_id, student_id=student_id
-        ).exists():
-            raise serializers.ValidationError(
-                "Student is already enrolled in this module."
-            )
-
-        return data

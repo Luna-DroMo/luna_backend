@@ -8,7 +8,6 @@ class Command(BaseCommand):
     help = "Generate new survey and activate module instances"
 
     def handle(self, *args, **options):
-
         active_modules = Module.objects.filter(
             start_date__lte=timezone.now(), end_date__gte=timezone.now()
         )
