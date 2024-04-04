@@ -1,41 +1,60 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import timedelta
-from core.models import Module, StudentSurvey
+from core.models import Module, StudentSurvey, StudentModule
 
 
 class Command(BaseCommand):
-    help = "Generate new survey instances based on module configuration"
+    help = "Generate new survey and activate module instances"
 
     def handle(self, *args, **options):
+        active_modules = Module.objects.filter(
+            start_date__lte=timezone.now(), end_date__gte=timezone.now()
+        )
+
+        for module in active_modules:
+
+            if module.status == Module.Status.INACTIVE:
+                module.status = Module.Status.ACTIVE
+                module.save()
+                self.stdout.write(
+                    self.style.SUCCESS(f"Activated module: {module.name}")
+                )
 
         # Get the current day number, 1=Monday through 7=Sunday
-        current_day = timezone.now().weekday() + 1
+        current_day = str(timezone.now().weekday() + 1)
 
         # Get all modules that have a survey day matching today
-        modules_matching_today = Module.objects.filter(survey_days=current_day)
+        modules_matching_today = Module.objects.filter(
+            survey_days=current_day, status=Module.Status.ACTIVE
+        )
 
         for module in modules_matching_today:
-            # Set all current surveys for the module to inactive
-            StudentSurvey.objects.filter(module=module, is_active=True).update(
-                is_active=False
-            )
+            student_modules = StudentModule.objects.filter(
+                module=module
+            ).select_related("student")
 
-            # Create a new active survey instance for the module
-            start_date = timezone.now().date()
-            end_date = start_date + timedelta(days=7)
-            StudentSurvey.objects.create(
-                module=module,
-                start_date=start_date,
-                end_date=end_date,
-                survey_status=StudentSurvey.SurveyStatus.NOT_COMPLETED,
-                is_active=True,
-            )
+            for student_module in student_modules:
+                StudentSurvey.objects.filter(
+                    module=module, student=student_module.student, is_active=True
+                ).update(is_active=False)
 
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"New active survey created for module: {module.name}"
+                start_date = timezone.now().date()
+                end_date = start_date + timedelta(days=7)
+
+                StudentSurvey.objects.create(
+                    module=module,
+                    student=student_module.student,
+                    start_date=start_date,
+                    end_date=end_date,
+                    survey_status=StudentSurvey.SurveyStatus.NOT_COMPLETED,
+                    is_active=True,
                 )
-            )
 
-        self.stdout.write(self.style.SUCCESS("Survey update process completed."))
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f"New active survey created for module: {module.name}"
+                    )
+                )
+
+            self.stdout.write(self.style.SUCCESS("Survey update process completed."))
