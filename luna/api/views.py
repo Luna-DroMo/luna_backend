@@ -35,7 +35,6 @@ from .serializers import (
     StudentModuleSerializerWithSurveys,
     UniversitySerializer,
     FacultySerializer,
-    ModuleEnrollmentSerializer,
     ActiveSurveySerializer,
 )
 from rest_framework import status
