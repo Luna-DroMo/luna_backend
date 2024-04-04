@@ -39,7 +39,7 @@ urlpatterns = [
     ),
     path("getUserType/<int:id>", views.getUserType, name="get_user_type"),
     path(
-        "<int:student_id>/module/<int:module_id>",
+        "<int:student_id>/enroll_module",
         views.enroll_module,
         name="enroll_module",
     ),
@@ -74,5 +74,15 @@ urlpatterns = [
         "<int:student_id>/modules/available",
         views.get_available_modules,
         name="get_available_modules",
+    ),
+    path(
+        "<int:student_id>/university/modules",
+        views.get_university_modules,
+        name="get_university_modules",
+    ),
+    path(
+        "<int:user_id>/module/create",
+        views.create_module,
+        name="create_module",
     ),
 ]

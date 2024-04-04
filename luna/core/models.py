@@ -115,9 +115,9 @@ class Form(models.Model):
     name = models.CharField(max_length=255)
     content = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by_user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
-    # university = models.ForeignKey(
-    #     'University', on_delete=models.CASCADE, null=True)
+    created_by_user = models.ForeignKey(
+        "User", on_delete=models.CASCADE, null=True
+    )  # Custom form logic
 
     class FormType(models.TextChoices):
         EQ = "EQ", "EQ"
@@ -127,6 +127,9 @@ class Form(models.Model):
     form_type = models.CharField(
         max_length=50, choices=FormType.choices, default=FormType.EQ
     )
+
+    def __str__(self):
+        return f"{self.name} - {self.created_by_user}"
 
 
 class StudentForm(models.Model):
@@ -149,35 +152,42 @@ class StudentForm(models.Model):
         unique_together = ("student", "form")
 
     def __str__(self):
-        return f"{self.user} - {self.name}"
+        return f"{self.student} - {self.form}"
 
 
 class Module(models.Model):
-    name = models.CharField(max_length=255, null=True)
-    code = models.CharField(max_length=255, null=True)
-    faculty = models.ForeignKey(
-        "Faculty", on_delete=models.CASCADE, null=True, blank=True
+    name = models.CharField(
+        max_length=255,
     )
+    code = models.CharField(max_length=255)
+    university = models.ForeignKey("University", on_delete=models.CASCADE)
     owners = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True,  # Add this if you want to allow the field to be blank
+        blank=True,
         limit_choices_to=Q(user_type=User.UserType.LECTURER)
         | Q(user_type=User.UserType.ADMIN),
     )
-    password = models.CharField(max_length=255, null=True)
+    password = models.CharField(max_length=255, blank=True, null=True)
     start_date = models.DateField(null=False, default=timezone.now)
     end_date = models.DateField(null=False, default=timezone.now)
     created_at = models.DateTimeField(null=False, default=timezone.now)
     survey_days = DayOfTheWeekField(null=True)
+
+    class Semester(models.TextChoices):
+        WINTER = "WS", "Winter"
+        SUMMER = "SS", "Summer"
+
+    semester = models.CharField(
+        max_length=2, choices=Semester.choices, blank=True, null=True, default=None
+    )
 
     def __str__(self):
         return f"{self.name} ({self.id})"
 
 
 class StudentModule(models.Model):
-
     student = models.ForeignKey("StudentUser", on_delete=models.CASCADE)
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
 
@@ -237,6 +247,3 @@ class Faculty(models.Model):
 
     def __str__(self):
         return f"{self.name}"
-
-
-# Path: luna/core/models.py
