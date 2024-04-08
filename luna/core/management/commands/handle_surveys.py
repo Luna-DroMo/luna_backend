@@ -36,8 +36,10 @@ class Command(BaseCommand):
 
             for student_module in student_modules:
                 StudentSurvey.objects.filter(
-                    module=module, student=student_module.student, is_active=True
-                ).update(is_active=False)
+                    module=module,
+                    student=student_module.student,
+                    status=StudentSurvey.Status.ACTIVE,
+                ).update(status=StudentSurvey.Status.LATE)
 
                 start_date = timezone.now().date()
                 end_date = start_date + timedelta(days=7)
@@ -47,8 +49,8 @@ class Command(BaseCommand):
                     student=student_module.student,
                     start_date=start_date,
                     end_date=end_date,
-                    survey_status=StudentSurvey.SurveyStatus.NOT_COMPLETED,
-                    is_active=True,
+                    survey_status=StudentSurvey.Resolution.NOT_COMPLETED,
+                    status=StudentSurvey.Status.ACTIVE,
                 )
 
                 self.stdout.write(

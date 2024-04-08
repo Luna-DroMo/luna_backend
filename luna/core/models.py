@@ -201,15 +201,13 @@ class StudentModule(models.Model):
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("student", "module")
+        unique_together = ("module", "student")
 
     def __str__(self):
         return f"{self.student} {self.module}"
 
 
 class StudentSurvey(models.Model):
-    class Meta:
-        unique_together = ("student", "module")
 
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
@@ -220,17 +218,26 @@ class StudentSurvey(models.Model):
     student = models.ForeignKey("StudentUser", on_delete=models.CASCADE)
     content = models.JSONField(null=True, blank=True)
 
-    class SurveyStatus(models.TextChoices):
+    class Resolution(models.TextChoices):
         NOT_COMPLETED = "NOT_COMPLETED"
         COMPLETED = "COMPLETED"
 
-    survey_status = models.CharField(
+    resolution = models.CharField(
         max_length=20,
-        choices=SurveyStatus.choices,
-        default=SurveyStatus.NOT_COMPLETED,
+        choices=Resolution.choices,
+        default=Resolution.NOT_COMPLETED,
         null=True,
     )
-    is_active = models.BooleanField(default=False)
+
+    class Status(models.TextChoices):
+        ACTIVE = "ACTIVE", "Active"
+        LATE = "LATE", "Late"
+        ARCHIVED = "ARCHIVED", "ARCHIVED"
+
+    status = models.CharField(
+        choices=Status.choices,
+        default=Status.ACTIVE,
+    )
 
     def __str__(self):
         return f"{self.name}"

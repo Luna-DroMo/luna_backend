@@ -35,7 +35,6 @@ from .serializers import (
     StudentModuleSerializerWithSurveys,
     UniversitySerializer,
     FacultySerializer,
-    ModuleEnrollmentSerializer,
     ActiveSurveySerializer,
 )
 from rest_framework import status
@@ -180,7 +179,8 @@ class SurveyView(APIView):
 
         # Update the survey's content with the array and mark it as completed
         survey.content = content_array
-        survey.survey_status = StudentSurvey.SurveyStatus.COMPLETED
+        survey.resolution = StudentSurvey.Resolution.COMPLETED
+        survey.status = StudentSurvey.Status.ARCHIVED
         survey.save()
 
         serializer = StudentSurveySerializer(survey)
