@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "core",
     "drf_yasg",
+    "django_crontab",
 ]
 
 REST_FRAMEWORK = {
@@ -54,6 +55,8 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ],
 }
+
+CRONJOBS = [("* * * * *", "core.cron.handle_surveys")]  # Runs every minute
 
 AUTH_USER_MODEL = "core.User"
 CORS_ORIGIN_ALLOW_ALL = True
