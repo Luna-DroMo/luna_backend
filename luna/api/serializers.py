@@ -165,6 +165,25 @@ class StudentSurveySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ActiveSurveySerializer(serializers.ModelSerializer):
+    student = StudentUserSerializer()
+    module = ModuleSerializer()
+
+    class Meta:
+        model = StudentSurvey
+        fields = "__all__"
+
+    # module = serializers.SerializerMethodField()
+    # def get_module(self, obj):
+    #     # Manually construct the dictionary for the module information
+    #     # Adjust the fields according to what you need
+    #     return {
+    #         "id": obj.module.id,
+    #         "name": obj.module.name,
+    #         "code": obj.module.code,  # Assuming these fields exist on the Module model
+    #     }
+
+
 class DisplaySurveySerializer(serializers.ModelSerializer):
     module_name = serializers.SerializerMethodField(read_only=True)
 
@@ -237,27 +256,3 @@ class FacultySerializer(serializers.ModelSerializer):
     class Meta:
         model = Faculty
         fields = "__all__"
-
-
-class ModuleEnrollmentSerializer(serializers.Serializer):
-    module_id = serializers.IntegerField()
-    student_id = serializers.IntegerField()
-
-    def validate(self, data):
-        module_id = data.get("module_id")
-        student_id = data.get("student_id")
-
-        if not Module.objects.filter(id=module_id).exists():
-            raise serializers.ValidationError("Module does not exist.")
-
-        if not StudentUser.objects.filter(id=student_id).exists():
-            raise serializers.ValidationError("Student does not exist.")
-
-        if StudentModule.objects.filter(
-            module_id=module_id, student_id=student_id
-        ).exists():
-            raise serializers.ValidationError(
-                "Student is already enrolled in this module."
-            )
-
-        return data

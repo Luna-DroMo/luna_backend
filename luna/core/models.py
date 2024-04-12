@@ -115,9 +115,9 @@ class Form(models.Model):
     name = models.CharField(max_length=255)
     content = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by_user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
-    # university = models.ForeignKey(
-    #     'University', on_delete=models.CASCADE, null=True)
+    created_by_user = models.ForeignKey(
+        "User", on_delete=models.CASCADE, null=True
+    )  # Custom form logic
 
     class FormType(models.TextChoices):
         EQ = "EQ", "EQ"
@@ -127,6 +127,9 @@ class Form(models.Model):
     form_type = models.CharField(
         max_length=50, choices=FormType.choices, default=FormType.EQ
     )
+
+    def __str__(self):
+        return f"{self.name} - {self.created_by_user}"
 
 
 class StudentForm(models.Model):
@@ -149,7 +152,7 @@ class StudentForm(models.Model):
         unique_together = ("student", "form")
 
     def __str__(self):
-        return f"{self.user} - {self.name}"
+        return f"{self.student} - {self.form}"
 
 
 class Module(models.Model):
@@ -180,6 +183,15 @@ class Module(models.Model):
         max_length=2, choices=Semester.choices, blank=True, null=True, default=None
     )
 
+    class Status(models.TextChoices):
+        ACTIVE = "ACTIVE", "Active"
+        INACTIVE = "INACTIVE", "Inactive"
+
+    status = models.CharField(
+        choices=Status.choices,
+        default=Status.INACTIVE,
+    )
+
     def __str__(self):
         return f"{self.name} ({self.id})"
 
@@ -189,42 +201,46 @@ class StudentModule(models.Model):
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("student", "module")
+        unique_together = ("module", "student")
 
     def __str__(self):
         return f"{self.student} {self.module}"
 
 
 class StudentSurvey(models.Model):
+
     name = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(null=False, default=timezone.now)
     updated_at = models.DateTimeField(null=False, auto_now=True)
-    end_date = models.DateTimeField(null=False, default=timezone.now)
+    start_date = models.DateTimeField(null=False, default=timezone.now)
+    end_date = models.DateTimeField(null=True, blank=True)
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
     student = models.ForeignKey("StudentUser", on_delete=models.CASCADE)
     content = models.JSONField(null=True, blank=True)
 
-    class SurveyStatus(models.TextChoices):
+    class Resolution(models.TextChoices):
         NOT_COMPLETED = "NOT_COMPLETED"
         COMPLETED = "COMPLETED"
 
-    survey_status = models.CharField(
+    resolution = models.CharField(
         max_length=20,
-        choices=SurveyStatus.choices,
-        default=SurveyStatus.NOT_COMPLETED,
+        choices=Resolution.choices,
+        default=Resolution.NOT_COMPLETED,
         null=True,
     )
 
-    is_active = models.BooleanField(
-        default=True,
-        help_text="If set to False, the survey will not be visible to the student",
+    class Status(models.TextChoices):
+        ACTIVE = "ACTIVE", "Active"
+        LATE = "LATE", "Late"
+        ARCHIVED = "ARCHIVED", "Archived"
+
+    status = models.CharField(
+        choices=Status.choices,
+        default=Status.ACTIVE,
     )
 
-    class Meta:
-        unique_together = ("module", "is_active")
-
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.module.name} - {self.student.first_name}"
 
 
 class University(models.Model):

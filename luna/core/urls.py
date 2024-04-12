@@ -6,4 +6,5 @@ urlpatterns = [
     path("signup", views.signup),
     path("login", views.login),
     path("api/", include("api.urls")),
+    path("modelling/", include("modelling.urls")),
 ]

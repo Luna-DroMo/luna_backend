@@ -1,4 +1,4 @@
 from django.urls import path
-from .views import run_model
+from . import views
 
-urlpatterns = [path("run_model/", run_model, name="run_model")]
+urlpatterns = [path("run", views.run, name="run_model")]

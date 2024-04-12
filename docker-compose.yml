@@ -6,6 +6,7 @@ networks:
 
 services:
   web:
+    build: ./
     image: "caodoe/luna_backend-web:latest"
     ports:
       - "80:8000"

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "core",
     "modelling",
     "drf_yasg",
+    "django_crontab",
 ]
 
 REST_FRAMEWORK = {
@@ -55,6 +56,14 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ],
 }
+
+CRONJOBS = [
+    (
+        "* * * * *",
+        "core.management.commands.handle_surveys",
+        ">> /var/log/cron.log 2>&1",
+    )
+]
 
 AUTH_USER_MODEL = "core.User"
 CORS_ORIGIN_ALLOW_ALL = True
