@@ -59,7 +59,7 @@ REST_FRAMEWORK = {
 CRONJOBS = [
     (
         "* * * * *",
-        "core.management.handle_surveys",
+        "core.management.commands.handle_surveys",
         ">> /var/log/cron.log 2>&1",
     )
 ]
