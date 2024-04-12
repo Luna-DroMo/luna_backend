@@ -8,6 +8,7 @@ from .models import (
     StudentForm,
     Faculty,
     University,
+    StudentSurvey,
 )
 
 admin.site.register(User)
@@ -18,3 +19,4 @@ admin.site.register(Faculty)
 admin.site.register(StudentUser)
 admin.site.register(StudentModule)
 admin.site.register(StudentForm)
+admin.site.register(StudentSurvey)

@@ -10,6 +10,8 @@ COPY requirements.txt .
 # Install the project dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install cron and other necessary system utilities
+RUN apt-get update && apt-get install -y cron
 
 # Copy the project code into the container
 COPY . .
@@ -20,6 +22,8 @@ RUN chmod +x /entrypoint.sh
 
 # Change the working directory to /app/luna
 WORKDIR /app/luna
+
+RUN touch /var/log/cron.log && chmod 0666 /var/log/cron.log
 
 EXPOSE 8000
 

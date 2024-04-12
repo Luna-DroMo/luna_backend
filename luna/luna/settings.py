@@ -56,7 +56,13 @@ REST_FRAMEWORK = {
     ],
 }
 
-CRONJOBS = [("* * * * *", "core.cron.handle_surveys")]  # Runs every minute
+CRONJOBS = [
+    (
+        "* * * * *",
+        "core.management.handle_surveys",
+        ">> /var/log/cron.log 2>&1",
+    )
+]
 
 AUTH_USER_MODEL = "core.User"
 CORS_ORIGIN_ALLOW_ALL = True

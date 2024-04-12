@@ -49,7 +49,7 @@ class Command(BaseCommand):
                     student=student_module.student,
                     start_date=start_date,
                     end_date=end_date,
-                    survey_status=StudentSurvey.Resolution.NOT_COMPLETED,
+                    resolution=StudentSurvey.Resolution.NOT_COMPLETED,
                     status=StudentSurvey.Status.ACTIVE,
                 )
 

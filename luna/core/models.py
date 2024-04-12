@@ -232,7 +232,7 @@ class StudentSurvey(models.Model):
     class Status(models.TextChoices):
         ACTIVE = "ACTIVE", "Active"
         LATE = "LATE", "Late"
-        ARCHIVED = "ARCHIVED", "ARCHIVED"
+        ARCHIVED = "ARCHIVED", "Archived"
 
     status = models.CharField(
         choices=Status.choices,
@@ -240,7 +240,7 @@ class StudentSurvey(models.Model):
     )
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.module.name} - {self.student.first_name}"
 
 
 class University(models.Model):
