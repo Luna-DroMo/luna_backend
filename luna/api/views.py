@@ -42,8 +42,8 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-from ..modelling.utils import run_model
-from ..modelling.models import Results
+from modelling.utils import run_model
+from modelling.models import Results
 
 
 class TestView(APIView):

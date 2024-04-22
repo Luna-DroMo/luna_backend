@@ -9,3 +9,8 @@ class Student_Module_Results_Serializer(serializers.ModelSerializer):
     class Meta:
         model = Results
         fields = ("week", "result")
+
+
+class Module_Results_Serializer(serializers.Serializer):
+    week = serializers.IntegerField(source="SurveyNumber_T")
+    result = serializers.FloatField(source="mean_smoothed_output")
