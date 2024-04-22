@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "core",
+    "modelling",
     "drf_yasg",
     "django_crontab",
 ]
@@ -59,7 +60,7 @@ REST_FRAMEWORK = {
 CRONJOBS = [
     (
         "* * * * *",
-        "core.management.handle_surveys",
+        "core.management.commands.handle_surveys",
         ">> /var/log/cron.log 2>&1",
     )
 ]

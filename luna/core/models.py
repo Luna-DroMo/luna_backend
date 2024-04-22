@@ -217,6 +217,7 @@ class StudentSurvey(models.Model):
     module = models.ForeignKey("Module", on_delete=models.CASCADE)
     student = models.ForeignKey("StudentUser", on_delete=models.CASCADE)
     content = models.JSONField(null=True, blank=True)
+    survey_number = models.IntegerField(default=1, editable=False)
 
     class Resolution(models.TextChoices):
         NOT_COMPLETED = "NOT_COMPLETED"
@@ -231,13 +232,20 @@ class StudentSurvey(models.Model):
 
     class Status(models.TextChoices):
         ACTIVE = "ACTIVE", "Active"
-        LATE = "LATE", "Late"
         ARCHIVED = "ARCHIVED", "Archived"
 
     status = models.CharField(
         choices=Status.choices,
         default=Status.ACTIVE,
     )
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            current_count = StudentSurvey.objects.filter(
+                student=self.student, module=self.module
+            ).count()
+            self.survey_number = current_count + 1
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.module.name} - {self.student.first_name}"
