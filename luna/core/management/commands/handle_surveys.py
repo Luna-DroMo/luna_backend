@@ -29,17 +29,27 @@ class Command(BaseCommand):
             survey_days=current_day, status=Module.Status.ACTIVE
         )
 
+        print(modules_matching_today)
+
         for module in modules_matching_today:
+
             student_modules = StudentModule.objects.filter(
                 module=module
             ).select_related("student")
+
+            if student_modules.exists():  # Check if any entries are found
+                print(
+                    f"Found {student_modules.count()} student modules for {module.name}"
+                )
+            else:
+                print(f"No student modules found for {module.id}")
 
             for student_module in student_modules:
                 StudentSurvey.objects.filter(
                     module=module,
                     student=student_module.student,
                     status=StudentSurvey.Status.ACTIVE,
-                ).update(status=StudentSurvey.Status.LATE)
+                ).update(status=StudentSurvey.Status.ARCHIVED)
 
                 start_date = timezone.now().date()
                 end_date = start_date + timedelta(days=7)

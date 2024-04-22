@@ -1,11 +1,11 @@
 from django.db import models
-from core.models import StudentUser, StudentSurvey
+from core.models import StudentUser, StudentSurvey, Module
 
 
 class Results(models.Model):
     id = models.AutoField(primary_key=True)
     student = models.ForeignKey(StudentUser, on_delete=models.SET_NULL, null=True)
-    survey = models.ForeignKey(StudentSurvey, on_delete=models.CASCADE)
+    module = models.ForeignKey(Module, on_delete=models.SET_NULL, null=True)
     smoothed_output = models.JSONField(null=True)
     covariance_matrix = models.JSONField(null=True)
     smooth_covariance_matrix = models.JSONField(null=True)
