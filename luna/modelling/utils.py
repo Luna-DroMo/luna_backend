@@ -51,10 +51,10 @@ def run_model(student_id, module_id):
                 module=module_instance,
                 SurveyNumber_T=survey.survey_number,  # Use the survey number directly
                 defaults={
-                    "smoothed_output": np.array(s_state).flatten().tolist(),
-                    "raw_output": np.array(r_state).flatten().tolist(),
-                    "covariance_matrix": np.array(r_cov).flatten().tolist(),
-                    "smooth_covariance_matrix": np.array(s_cov).flatten().tolist(),
+                    "smoothed_output": np.array(s_state).flatten().tolist()[0],
+                    "raw_output": np.array(r_state).flatten().tolist()[0],
+                    "covariance_matrix": np.array(r_cov).flatten().tolist()[0],
+                    "smooth_covariance_matrix": np.array(s_cov).flatten().tolist()[0],
                     "time_evaluated": timezone.now(),
                 },
             )
