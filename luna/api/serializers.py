@@ -256,3 +256,4 @@ class FacultySerializer(serializers.ModelSerializer):
     class Meta:
         model = Faculty
         fields = "__all__"
+

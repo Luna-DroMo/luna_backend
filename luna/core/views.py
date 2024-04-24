@@ -8,12 +8,12 @@ from rest_framework.authtoken.models import Token
 from .models import User, StudentUser
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
-
+from drf_yasg.utils import swagger_auto_schema
 
 def landing(request):
     return render(request, "core/index.html")
 
-
+@swagger_auto_schema(tags=['Login'], method='post')
 @api_view(["POST"])
 def login(request):
     user = get_object_or_404(User, email=request.data["email"])
@@ -38,7 +38,7 @@ def login(request):
 
     return Response(response_data)
 
-
+@swagger_auto_schema(tags=['Sign-Up'], method='post')
 @api_view(["POST"])
 def signup(request):
     serializer = UserSerializer(data=request.data)

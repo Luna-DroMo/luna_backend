@@ -36,12 +36,14 @@ from .serializers import (
     UniversitySerializer,
     FacultySerializer,
     ActiveSurveySerializer,
+    
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
+from drf_yasg.utils import swagger_auto_schema
 
 class TestView(APIView):
     permission_classes = [IsAuthenticated]
@@ -53,6 +55,7 @@ class TestView(APIView):
 class ModuleView(APIView):
     # permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(tags=['Module-related Operations'])
     def get(self, request, *args, **kwargs):
         student_id = self.kwargs.get("student_id")
         student_modules = StudentModule.objects.filter(
@@ -61,6 +64,7 @@ class ModuleView(APIView):
         serializer = StudentModuleSerializerWithSurveys(student_modules, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(tags=['Module-related Operations'], request_body=ModuleSerializer)
     def post(self, request, *args, **kwargs):
         serializer = ModuleSerializer(data=request.data)
         if serializer.is_valid():
@@ -71,6 +75,7 @@ class ModuleView(APIView):
 
 class StudentFormsView(APIView):
     # permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(tags=['Student-related Operations'])
     def get(self, request, student_id, form_id):
         try:
             student = StudentUser.objects.get(pk=student_id)
@@ -87,7 +92,9 @@ class StudentFormsView(APIView):
             return Response(
                 {"error": "Student form not found."}, status=status.HTTP_404_NOT_FOUND
             )
+        
 
+    @swagger_auto_schema(tags=['Student-related Operations'], request_body=BackgroundFormSerializer)
     def post(self, request, student_id, form_id):
 
         try:
@@ -138,6 +145,7 @@ class StudentFormsView(APIView):
 
 
 class StudentView(APIView):
+    @swagger_auto_schema(tags=['Student-related Operations'])
     def get(self, request, student_id):
         student = get_object_or_404(StudentUser, pk=student_id)
         serializer = StudentUserSerializer(student)
@@ -145,6 +153,7 @@ class StudentView(APIView):
 
 
 class SurveyView(APIView):
+    @swagger_auto_schema(tags=['Survey-related Operations'])
     def get(self, request, student_id, survey_id):
         student = get_object_or_404(StudentUser, pk=student_id)
         try:
@@ -159,6 +168,7 @@ class SurveyView(APIView):
 
     parser_classes = [JSONParser]
 
+    @swagger_auto_schema(tags=['Survey-related Operations'], request_body=StudentSurveySerializer)
     def post(self, request, student_id, survey_id):
         student = get_object_or_404(StudentUser, pk=student_id)
         survey = get_object_or_404(StudentSurvey, pk=survey_id)
@@ -169,6 +179,7 @@ class SurveyView(APIView):
             )
         if survey.is_active is False:
             return Response("Survey is not active.", status=status.HTTP_400_BAD_REQUEST)
+
 
         content_array = request.data
         if not isinstance(content_array, list):
@@ -188,6 +199,7 @@ class SurveyView(APIView):
 
 
 # Function-based views defined below.
+@swagger_auto_schema(tags=['Student-related Operations'], method='get')
 @api_view(["GET"])
 # @permission_classes([IsAuthenticated])
 def get_background_status(request, student_id):
@@ -239,7 +251,7 @@ def get_background_status(request, student_id):
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@swagger_auto_schema(tags=['User-related Operations'], method='patch')
 @api_view(["PATCH"])
 def update_studentuser_with_id(request, pk):
     try:
@@ -258,7 +270,7 @@ def update_studentuser_with_id(request, pk):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@swagger_auto_schema(tags=['Form-related Operations'], method='post', request_body=FormSerializer)
 @api_view(["POST"])
 def save_form(request, student_id):
 
@@ -272,7 +284,7 @@ def save_form(request, student_id):
         form_data = request.data
 
         form_instance = Form(
-            user=studentuser, name=form_data["name"], content=form_data["content"]
+            created_by_user=studentuser, name=form_data["name"], content=form_data["content"]
         )
 
         form_instance.save()
@@ -280,7 +292,7 @@ def save_form(request, student_id):
         serializer = FormSerializer(instance=form_instance)
         return Response(serializer.data)
 
-
+@swagger_auto_schema(tags=['User-related Operations'], method='get')
 @api_view(["GET"])
 def get_studentusers(request, email):
     if request.method == "GET":
@@ -297,7 +309,7 @@ def get_studentusers(request, email):
         serializer = StudentUserSerializer(studentuser)
         return Response(serializer.data)
 
-
+@swagger_auto_schema(tags=['Student-related Operations'], method='patch')
 @api_view(["PATCH"])
 def update_studentuser_with_email(request, email):
     try:
@@ -316,13 +328,13 @@ def update_studentuser_with_email(request, email):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@swagger_auto_schema(tags=['User-related Operations'], method='get', operation_description='To determine the type of user. Returns 1 (Student), 2 (Lecturer) or 3 (Admin)')
 @api_view(["GET"])
 def getUserType(request, id):
     user = get_object_or_404(User, id=id)
     return Response(user.user_type)
 
-
+@swagger_auto_schema(tags=['Module-related Operations'], method='post', request_body=StudentModuleSerializer)
 @api_view(["POST"])
 # @permission_classes([IsAuthenticated])
 def enroll_module(request, student_id):
@@ -353,7 +365,7 @@ def enroll_module(request, student_id):
     response_serializer = StudentModuleSerializer(student_module)
     return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
-
+@swagger_auto_schema(tags=['Module-related Operations'], method='get')
 @api_view(["GET"])
 def get_student_modules(request, student_id):
 
@@ -367,7 +379,7 @@ def get_student_modules(request, student_id):
     serializer = ModuleSerializer(modules, many=True)
     return Response(serializer.data)
 
-
+@swagger_auto_schema(tags=['University-related Operations'], method='get')
 @api_view(["GET"])
 def get_all_universities(request):
     universities = University.objects.all()
@@ -375,7 +387,7 @@ def get_all_universities(request):
     print(serializer.data)
     return Response(serializer.data)
 
-
+@swagger_auto_schema(tags=['University-related Operations'], method='get')
 @api_view(["GET"])
 def get_university_faculties(request, university_id):
     university = get_object_or_404(University, pk=university_id)
@@ -383,7 +395,7 @@ def get_university_faculties(request, university_id):
     serializer = FacultySerializer(faculties, many=True)
     return Response(serializer.data)
 
-
+@swagger_auto_schema(tags=['Module-related Operations'], method='get')
 @api_view(["GET"])
 def get_lecturer_modules(request, lecturer_id):
     lecturer = get_object_or_404(User, pk=lecturer_id)
@@ -391,14 +403,14 @@ def get_lecturer_modules(request, lecturer_id):
     serializer = ModuleSerializer(modules, many=True)
     return Response(serializer.data)
 
-
+@swagger_auto_schema(tags=['Module-related Operations'], method='get')
 @api_view(["GET"])
 def get_module_details(request, module_id):
     module = get_object_or_404(Module, pk=module_id)
     serializer = ModuleSerializer(module)
     return Response(serializer.data)
 
-
+@swagger_auto_schema(tags=['Module-related Operations'], method='get')
 @api_view(["GET"])
 def get_available_modules(request, student_id):
 
@@ -414,7 +426,7 @@ def get_available_modules(request, student_id):
     serializer = ModuleSerializer([sm for sm in available_modules], many=True)
     return Response(serializer.data)
 
-
+@swagger_auto_schema(tags=['Module-related Operations'], method='post',request_body=ModuleSerializer)
 @api_view(["POST"])
 def create_module(request, user_id):
     serializer = ModuleSerializer(data=request.data, partial=True)
@@ -424,6 +436,7 @@ def create_module(request, user_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(tags=['Module-related Operations'], method='get')
 @api_view(["GET"])
 def get_university_modules(request, student_id):
     student = get_object_or_404(StudentUser, pk=student_id)
@@ -432,7 +445,7 @@ def get_university_modules(request, student_id):
     serializer = ModuleSerializer(modules, many=True)
     return Response(serializer.data)
 
-
+@swagger_auto_schema(tags=['Survey-related Operations'], method='get')
 @api_view(["GET"])
 def get_active_surveys(request, student_id):
     student = get_object_or_404(StudentUser, pk=student_id)
