@@ -1,7 +1,6 @@
 from .modelling import KalmanFilter
 from . import model_settings as MS
 import numpy as np
-import pandas as pd
 from rest_framework.response import Response
 from core.models import StudentUser, Module, StudentSurvey
 from .models import Results

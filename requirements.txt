@@ -10,4 +10,5 @@ typing-extensions==4.7.1
 tzdata==2023.3
 python-dotenv
 drf_yasg
-django-crontab
+django-cron
+numpy

@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "core",
     "modelling",
     "drf_yasg",
-    "django_crontab",
+    "django_cron",
 ]
 
 REST_FRAMEWORK = {
@@ -57,12 +57,8 @@ REST_FRAMEWORK = {
     ],
 }
 
-CRONJOBS = [
-    (
-        "* * * * *",
-        "core.management.commands.handle_surveys",
-        ">> /var/log/cron.log 2>&1",
-    )
+CRON_CLASSES = [
+    "core.cron.SurveyCronjob",
 ]
 
 AUTH_USER_MODEL = "core.User"

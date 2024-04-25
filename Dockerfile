@@ -29,3 +29,4 @@ EXPOSE 8000
 
 # Start the application using the entrypoint script
 ENTRYPOINT ["/entrypoint.sh"]
+CMD []
