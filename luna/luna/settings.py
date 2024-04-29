@@ -46,7 +46,9 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "core",
+    "modelling",
     "drf_yasg",
+    "django_cron",
 ]
 
 REST_FRAMEWORK = {
@@ -54,6 +56,10 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ],
 }
+
+CRON_CLASSES = [
+    "core.cron.SurveyCronjob",
+]
 
 AUTH_USER_MODEL = "core.User"
 CORS_ORIGIN_ALLOW_ALL = True
