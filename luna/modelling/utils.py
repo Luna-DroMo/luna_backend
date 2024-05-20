@@ -62,3 +62,45 @@ def run_model(student_id, module_id):
     except Exception as e:
         print(str(e))
         return False
+
+
+
+
+# ------------------------------------------------------------------
+# Storing the required matricies for the AIST/PANAS etc questionnaires here
+
+
+
+# PANAS
+# First Entry relates to PA (postive)
+# Second Entry relates to NA (negative)
+
+# This is a 20x2 matrix. Use as follows:
+# PANAS response: vector of length 20, or matrix of 1x20
+# panas_response @ l_aist -> 1x20 @ 20x2 = 1x2 matrix containing PA and NA measurements
+l_panas = np.array([
+    [.67, 0], # Attentive / Aufmerksam
+    [0, .71], # Nervous / Nervös
+    [.70, 0], # Determined / Entschlossen
+    [0, .70], # Scared / Erschocken
+    [.58, 0], # Proud / Stolz
+    [0, .46], # Guilty / Schuldig
+    [.71, 0], # Strong / Stark
+    [0, .55], # Irritable / Gereizt
+    [.66, 0], # Active / Aktiv
+    [0, .70], # Afraid / Ǎngstlich
+    [.64, 0], # Interessested / Interssiert
+    [0, .38], # Hostile / Feindselig
+    [.79, 0], # Enthusiastic / Begeistert
+    [0, .49], # Ashamed / Beschämt
+    [.71 ,0], # Inpsired / Angeregt
+    [0, .66], # Jittery / Durcheinander
+    [.72, 0], # Alert / Wach
+    [0, .64], # Distressed / Bekümmert
+    [.44, 0], # Excited / Freudig Erregt
+    [0, .60], # Upset / Verärgert
+])
+
+l_aist = np.array([
+    
+])
