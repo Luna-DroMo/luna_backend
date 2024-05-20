@@ -13,4 +13,5 @@ class Student_Module_Results_Serializer(serializers.ModelSerializer):
 
 class Module_Results_Serializer(serializers.Serializer):
     week = serializers.IntegerField(source="SurveyNumber_T")
-    result = serializers.FloatField(source="mean_smoothed_output")
+    mean = serializers.FloatField(source="mean_smoothed_output")
+    stdev = serializers.FloatField(source="std_smoothed_output")

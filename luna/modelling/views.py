@@ -6,7 +6,7 @@ from core.models import Module, StudentUser
 from .models import Results
 from django.shortcuts import get_object_or_404
 from .serializers import Student_Module_Results_Serializer, Module_Results_Serializer
-from django.db.models import Avg
+from django.db.models import Avg, StdDev
 from rest_framework.renderers import JSONRenderer
 
 
@@ -34,10 +34,24 @@ def get_module_modelling_results(request, module_id):
     module_results = (
         Results.objects.filter(module=module)
         .values("SurveyNumber_T")
-        .annotate(mean_smoothed_output=Avg("smoothed_output"))
+        .annotate(
+            mean_smoothed_output=Avg("smoothed_output"),
+            std_smoothed_output=StdDev(
+                "smoothed_output"
+            ),  # Calculate standard deviation
+        )
         .order_by("SurveyNumber_T")
     )
     serializer = Module_Results_Serializer(module_results, many=True)
-    print(type(serializer.data))
 
-    return Response(serializer.data)
+    students_high_risk = (
+        Results.objects.filter(module=module, smoothed_output__gt=80)
+        .values_list("student_id", flat=True)
+        .distinct()
+    )
+    response_data = {
+        "weekly_results": serializer.data,
+        "high_risk_students": list(students_high_risk),
+    }
+
+    return Response(response_data)
