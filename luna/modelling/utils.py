@@ -101,6 +101,33 @@ l_panas = np.array([
     [0, .60], # Upset / Verärgert
 ])
 
-l_aist = np.array([
-    
+# Motivation
+# This we just use the sum score (as in, the sum of the responses).
+# In our case though, we should take the mean.
+# Some items are negatively coded though, so a mean wouldn't make too much sense.
+# Take this matrix/vector, multiply it by the response vector, and then divide by 22 (22=length of array).
+# This will give us the positively coded average
+l_motivation = np.array([
+     1, # Ich bin gut in Mathematik.
+     1, # Ich beschäftige mich gerne mit Mathematik.
+     1, # Ich finde Mathematik spannend.
+     1, # Mit Mathe-Kenntnissen kann ich andere beeindrucken.
+     1, # Gute Leistungen in Mathe sind mir wichtig.
+     1, # Für meine berufliche Zukunft wird es sich auszahlen, gut in Mathematik zu sein.
+     1, # Es macht mir Spaß, mich mit mathematischen Themen zu beschäftigen.
+    -1, # Ich befürchte, durch den zeitlichen Aufwand im Mathematikstudium wertvolle Freundschaften zu verlieren.
+    -1, # Ich befürchte, dass ich mit dem Stress, den das Mathematikstudium mit sich bringt, nicht umgehen kann
+    -1, # Mathematik hat für mich keine große Bedeutung
+     1, # Es ist mir wichtig, mathematische Inhalte zu meistern.
+    -1, # Für Mathematik fehlt mir die notwendige Begabung
+    -1, # Ich habe den Eindruck, als müsse man für den Abschluss eines Mathematikstudiums mehr Anstrengung investieren, als ich das möchte.
+    -1, # Ich befürchte, dass mir durch das Mathematikstudium Zeit für andere Aktivitäten, die ich gerne verfolgen möchte, verloren geht 
+     1, # Gute Leistungen in Mathematik werden mir für Beruf und Karriere viele Vorteile bringen.
+    -1, # Die Beschäftigung mit Mathe kostet mich eine Menge Energie. 
+     1, # Mathematik fällt mir leicht.
+     1, # Wenn ich in Mathe viel weiß, komme ich damit bei meinen Kommilitonen gut an.
+    -1, # Mathematik liegt mir nicht besonders.
+     1, # Mathematik macht mir Spaß.
+     1, # Es wäre mir peinlich herauszufinden, wenn meine Leistungen im Mathematikstudium schlechter wären als die meiner Kommilitonen.
+     1  # Mathematik entspricht meinen persönlichen Neigungen.
 ])
