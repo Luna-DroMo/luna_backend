@@ -92,7 +92,6 @@ class StudentFormsView(APIView):
             )
 
     def post(self, request, student_id, form_id):
-
         try:
             student = StudentUser.objects.get(pk=student_id)
         except StudentUser.DoesNotExist:
@@ -109,15 +108,6 @@ class StudentFormsView(APIView):
             }
 
             submitted_responses = request.data
-            submitted_question_ids = {
-                response["question_id"] for response in submitted_responses
-            }
-
-            if question_ids != submitted_question_ids:
-                return Response(
-                    {"error": "All questions must be answered."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
 
             if student_form.content:
                 return Response(
@@ -125,7 +115,13 @@ class StudentFormsView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            student_form.content = submitted_responses
+            # Convert the submitted responses into the desired format
+            response_dict = {
+                response["question_id"]: response["value"]
+                for response in submitted_responses
+            }
+
+            student_form.content = response_dict
             student_form.resolution = "COMPLETED"
             student_form.submitted_at = timezone.now()
             student_form.save()
@@ -210,8 +206,8 @@ def get_background_status(request, student_id):
         resolution=StudentForm.ResolutionStatus.COMPLETED
     )
 
-    completed_form_types = [form.form.form_type for form in completed_forms]
-    not_completed_form_types = [form.form.form_type for form in not_completed_forms]
+    completed_form_types = [form.form.name for form in completed_forms]
+    not_completed_form_types = [form.form.name for form in not_completed_forms]
 
     percentage = (
         int((len(completed_form_types) / total_forms) * 100) if total_forms > 0 else 0
@@ -220,10 +216,6 @@ def get_background_status(request, student_id):
     personal_info_fields = [
         student.first_name,
         student.last_name,
-        student.birth_date,
-        student.abitur_note,
-        student.main_language,
-        student.financial_support,
     ]
     personal_info = all(field is not None for field in personal_info_fields)
 
@@ -233,6 +225,8 @@ def get_background_status(request, student_id):
         "completed_forms": completed_form_types,
         "not_completed_forms": not_completed_form_types,
     }
+
+    print(not_completed_form_types)
 
     serializer = BackgroundStatusSerializer(data=data)
 

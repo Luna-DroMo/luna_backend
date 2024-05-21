@@ -115,18 +115,7 @@ class Form(models.Model):
     name = models.CharField(max_length=255)
     content = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by_user = models.ForeignKey(
-        "User", on_delete=models.CASCADE, null=True
-    )  # Custom form logic
-
-    class FormType(models.TextChoices):
-        EQ = "EQ", "EQ"
-        IQ = "IQ", "IQ"
-        AIST = "AIST", "AIST"
-
-    form_type = models.CharField(
-        max_length=50, choices=FormType.choices, default=FormType.EQ
-    )
+    created_by_user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return f"{self.name} - {self.created_by_user}"
