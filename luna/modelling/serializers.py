@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Results
+from .models import SurveyResults
 
 
 class Student_Module_Results_Serializer(serializers.ModelSerializer):
@@ -7,7 +7,7 @@ class Student_Module_Results_Serializer(serializers.ModelSerializer):
     result = serializers.JSONField(source="smoothed_output")
 
     class Meta:
-        model = Results
+        model = SurveyResults
         fields = ("week", "result")
 
 

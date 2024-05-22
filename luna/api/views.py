@@ -36,14 +36,14 @@ from .serializers import (
     UniversitySerializer,
     FacultySerializer,
     ActiveSurveySerializer,
+    BasicStudentFormSerializer,
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-from modelling.utils import run_model
-from modelling.models import Results
+from modelling.utils import run_model, process_form
 
 
 class TestView(APIView):
@@ -93,7 +93,7 @@ class StudentFormsView(APIView):
 
     def post(self, request, student_id, form_id):
         try:
-            student = StudentUser.objects.get(pk=student_id)
+            student = get_object_or_404(StudentUser, pk=student_id)
         except StudentUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -101,19 +101,19 @@ class StudentFormsView(APIView):
             student_form = StudentForm.objects.select_related("form").get(
                 student_id=student_id, form_id=form_id
             )
+        except StudentForm.DoesNotExist:
+            return Response(
+                {"error": "Student form not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
-            question_ids = {
-                question["question_id"]
-                for question in student_form.form.content["questions"]
-            }
+        if student_form.content:
+            return Response(
+                {"error": "Response already submitted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
+        try:
             submitted_responses = request.data
-
-            if student_form.content:
-                return Response(
-                    {"error": "Response already submitted."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
 
             # Convert the submitted responses into the desired format
             response_dict = {
@@ -126,14 +126,24 @@ class StudentFormsView(APIView):
             student_form.submitted_at = timezone.now()
             student_form.save()
 
-            return Response({"message": "Form submitted successfully."})
+            # Process the form based on its type
+            try:
+                process_form(response_dict, student_form)
+            except Exception as e:
+                print("Error processing form:", str(e))
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        except StudentForm.DoesNotExist:
-            return Response(
-                {"error": "Student form not found."}, status=status.HTTP_404_NOT_FOUND
-            )
+            serializer = BasicStudentFormSerializer(student_form)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print("Unexpected error:", str(e))
+            return Response(
+                {"error": "An unexpected error occurred."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class StudentView(APIView):
@@ -148,7 +158,7 @@ class SurveyView(APIView):
         student = get_object_or_404(StudentUser, pk=student_id)
         try:
             survey = StudentSurvey.objects.get(
-                pk=survey_id, student=student, is_active=True
+                pk=survey_id, student=student, status=StudentSurvey.Status.ACTIVE
             )
         except StudentSurvey.DoesNotExist:
             raise Http404("No StudentSurvey matches the given query.")
@@ -432,6 +442,8 @@ def get_university_modules(request, student_id):
 @api_view(["GET"])
 def get_active_surveys(request, student_id):
     student = get_object_or_404(StudentUser, pk=student_id)
-    surveys = StudentSurvey.objects.filter(student=student, is_active=True)
+    surveys = StudentSurvey.objects.filter(
+        student=student, status=StudentSurvey.Status.ACTIVE
+    )
     serializer = ActiveSurveySerializer(surveys, many=True)
     return Response(serializer.data)

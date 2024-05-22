@@ -157,6 +157,9 @@ class BackgroundStatusSerializer(serializers.Serializer):
     personal_info = serializers.ChoiceField(
         choices=[("completed", "Completed"), ("not_completed", "Not Completed")]
     )
+    form_status = serializers.ChoiceField(
+        choices=[("completed", "Completed"), ("not_completed", "Not Completed")]
+    )
 
 
 class StudentSurveySerializer(serializers.ModelSerializer):
@@ -246,3 +249,11 @@ class FacultySerializer(serializers.ModelSerializer):
     class Meta:
         model = Faculty
         fields = "__all__"
+
+
+class BasicStudentFormSerializer(serializers.ModelSerializer):
+    form_name = serializers.CharField(source="form.name")
+
+    class Meta:
+        model = StudentForm
+        fields = ["form_name", "resolution", "submitted_at"]

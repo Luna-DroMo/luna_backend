@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from .utils import run_model
 from rest_framework.response import Response
 from core.models import Module, StudentUser
-from .models import Results
+from .models import SurveyResults
 from django.shortcuts import get_object_or_404
 from .serializers import Student_Module_Results_Serializer, Module_Results_Serializer
 from django.db.models import Avg, StdDev
@@ -23,7 +23,7 @@ def run(request):
 def get_student_module_modelling_results(request, student_id, module_id):
     student = get_object_or_404(StudentUser, pk=student_id)
     module = get_object_or_404(Module, pk=module_id)
-    results = Results.objects.filter(student=student, module=module)
+    results = SurveyResults.objects.filter(student=student, module=module)
     serializer = Student_Module_Results_Serializer(results, many=True)
     return Response(serializer.data)
 
@@ -32,7 +32,7 @@ def get_student_module_modelling_results(request, student_id, module_id):
 def get_module_modelling_results(request, module_id):
     module = get_object_or_404(Module, pk=module_id)
     module_results = (
-        Results.objects.filter(module=module)
+        SurveyResults.objects.filter(module=module)
         .values("SurveyNumber_T")
         .annotate(
             mean_smoothed_output=Avg("smoothed_output"),
@@ -45,7 +45,7 @@ def get_module_modelling_results(request, module_id):
     serializer = Module_Results_Serializer(module_results, many=True)
 
     students_high_risk = (
-        Results.objects.filter(module=module, smoothed_output__gt=80)
+        SurveyResults.objects.filter(module=module, smoothed_output__gt=80)
         .values_list("student_id", flat=True)
         .distinct()
     )
