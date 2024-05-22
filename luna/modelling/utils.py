@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from core.models import StudentUser, Module, StudentSurvey
 from .models import FormResults
 from django.utils import timezone
+from .serializers import FormResultsSerializer
 
 
 def run_model(student_id, module_id):
@@ -80,26 +81,44 @@ def process_form(content, student_form):
         if student_form.form.name == "PANAS":
             # Perform matrix multiplication
             result = np.dot(response_array, l_panas)
-
             print("PANAS result:", result)
-            # Save the results to the FormResults model
-            FormResults.objects.create(
-                student_form=student_form,
-                results=result,
-            )
-            return result
+            # Save the results using the serializer
+            data = {"student_form": student_form.pk, "results": result.tolist()}
+            print("Data to be saved (PANAS):", data)
+            serializer = FormResultsSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                print("PANAS form saved successfully")
+            else:
+                print("Serializer errors (PANAS):", serializer.errors)
+            return result.tolist()
 
         elif student_form.form.name == "MOTIVATION":
-
-            result = ((response_array @ l_motivation) / 22).tolist()
+            # Perform element-wise multiplication and divide by 22
+            result = (response_array @ l_motivation) / 22
             result_list = (
                 [result] if isinstance(result, (float, np.float64)) else result.tolist()
             )
 
-            print("Motivation result before averaging:", result_list, type(result_list))
+            print("Motivation result after averaging:", result_list, type(result_list))
 
-            # Save the results to the FormResults model
-            FormResults.objects.create(student_form=student_form, results=result_list)
+            # Ensure result_list is a list of floats
+            if isinstance(result_list[0], (list, np.ndarray)):
+                result_list = [float(x) for sublist in result_list for x in sublist]
+            else:
+                result_list = [float(x) for x in result_list]
+
+            print("Final result list to be saved:", result_list, type(result_list))
+
+            # Save the results using the serializer
+            data = {"student_form": student_form.pk, "results": result_list}
+            print("Data to be saved (MOTIVATION):", data)
+            serializer = FormResultsSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                print("Motivation form saved successfully")
+            else:
+                print("Serializer errors (MOTIVATION):", serializer.errors)
             return result_list
         else:
             print("Form type not recognized")

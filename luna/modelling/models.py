@@ -20,4 +20,4 @@ class SurveyResults(models.Model):
 class FormResults(models.Model):
     id = models.AutoField(primary_key=True)
     student_form = models.ForeignKey(StudentForm, on_delete=models.SET_NULL, null=True)
-    results = ArrayField(models.FloatField(null=True, blank=True))
+    results = ArrayField(models.FloatField(), null=True, blank=True)
