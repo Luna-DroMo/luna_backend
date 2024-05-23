@@ -453,9 +453,14 @@ def get_active_surveys(request, student_id):
 
 
 @api_view(["GET"])
-def get_survey_module(request, student_id, survey_id):
+def get_survey_details(request, student_id, survey_id):
     student = get_object_or_404(StudentUser, pk=student_id)
-    survey = get_object_or_404(StudentSurvey, pk=survey_id, student=student)
-    module = get_object_or_404(Module, id=survey.module_id)
-    serializer = ModuleSerializer(module)  # Directly pass the module instance
+    try:
+        survey = StudentSurvey.objects.get(
+            pk=survey_id,
+            student=student,
+        )
+    except StudentSurvey.DoesNotExist:
+        raise Http404("No StudentSurvey matches the given query.")
+    serializer = DisplaySurveySerializer(survey)
     return Response(serializer.data)

@@ -186,7 +186,6 @@ class DisplaySurveySerializer(serializers.ModelSerializer):
             "updated_at",
             "module_name",
             "content",
-            "survey_status",
         ]
 
     def get_module_name(self, obj):
