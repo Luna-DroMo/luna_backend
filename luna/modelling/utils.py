@@ -40,7 +40,7 @@ def run_model(student_id, module_id):
         kalman_filter = KalmanFilter(F=MS.F, H=MS.H, Q=MS.Q, R=MS.R, x0=MS.x0)
 
         print("Running model...", survey_data)
-
+        print("Survey Data Shape: ", survey_data.shape)
         raw_state, predictions_cov, predictions_obs = kalman_filter.forward(
             survey_data  # eg np.array([[2], [3], [1]])
             # data = np.concat(survey_data, background_data)

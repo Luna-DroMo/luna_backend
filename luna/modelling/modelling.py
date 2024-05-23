@@ -8,7 +8,7 @@ class KalmanFilter(object):
             raise ValueError("Set proper system dynamics.")
 
         self.n = F.shape[1]  # Steps ahead
-        self.m = H.shape[1]
+        self.m = H.shape[0]
 
         self.F = F
         self.H = H
@@ -34,24 +34,28 @@ class KalmanFilter(object):
 
     def forward(self, observations):
         # Runs the forward algorithm based on observations
-
+        print("Forward - self.m: ", self.m)
+        print("Forward - self.H.shape: ", self.H.shape)
 
         z = observations
 
-        
         predictions_state = [self.x]
         predictions_obs = []
         predictions_cov = [self.P]
 
         for z in observations:
             z = z.reshape(self.m, 1)
-            if np.isnan(z).any():# all the missing values
-                
-                if not predictions_state: #if predictions are empty, meaning that the first observation is empty i.e. the first va
-                    z = np.array(np.full(self.m,2)).reshape(self.m,1)
+            if np.isnan(z).any():  # all the missing values
+
+                if (
+                    not predictions_state
+                ):  # if predictions are empty, meaning that the first observation is empty i.e. the first va
+                    z = np.array(np.full(self.m, 2)).reshape(self.m, 1)
                 else:
-                    expected_mean = np.random.normal(predictions_state[-1],predictions_cov[-1]) # sampling from the last observed step
-                    z = self.H @ expected_mean #from latent to observed state
+                    expected_mean = np.random.normal(
+                        predictions_state[-1], predictions_cov[-1]
+                    )  # sampling from the last observed step
+                    z = self.H @ expected_mean  # from latent to observed state
 
             self.update(z)
             predictions_dummy, prediction_dummy_cov = self.predict()
