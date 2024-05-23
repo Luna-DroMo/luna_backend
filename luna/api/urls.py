@@ -91,7 +91,7 @@ urlpatterns = [
         name="create_module",
     ),
     path(
-        "<int:student_id>/surveys/<int:survey_id>/info",
+        "<int:student_id>/surveys/<int:survey_id>/details",
         views.get_survey_details,
         name="get_survey_module",
     ),

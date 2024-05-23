@@ -37,6 +37,7 @@ from .serializers import (
     FacultySerializer,
     ActiveSurveySerializer,
     BasicStudentFormSerializer,
+    SurveyInformationSerializer,
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -460,7 +461,12 @@ def get_survey_details(request, student_id, survey_id):
             pk=survey_id,
             student=student,
         )
+        print(f"Survey: {survey}")
+        print(f"Survey Number: {survey.survey_number}")
+        print(f"End Date: {survey.end_date}")
     except StudentSurvey.DoesNotExist:
         raise Http404("No StudentSurvey matches the given query.")
-    serializer = DisplaySurveySerializer(survey)
+
+    serializer = SurveyInformationSerializer(survey)
+    print(f"Serialized Data: {serializer.data}")
     return Response(serializer.data)

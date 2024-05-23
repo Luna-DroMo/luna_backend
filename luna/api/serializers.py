@@ -256,3 +256,11 @@ class BasicStudentFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentForm
         fields = ["form_name", "resolution", "submitted_at"]
+
+
+class SurveyInformationSerializer(serializers.ModelSerializer):
+    module_name = serializers.CharField(source="module.name", read_only=True)
+
+    class Meta:
+        model = StudentSurvey
+        fields = ["module_name", "survey_number", "end_date"]
