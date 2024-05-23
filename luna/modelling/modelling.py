@@ -35,25 +35,23 @@ class KalmanFilter(object):
     def forward(self, observations):
         # Runs the forward algorithm based on observations
 
+
         z = observations
 
+        
         predictions_state = [self.x]
         predictions_obs = []
         predictions_cov = [self.P]
 
         for z in observations:
-            z = z.reshape(3, 1)
-            if np.isnan(z).any():  # all the missing values
-
-                if (
-                    not predictions_state
-                ):  # if predictions are empty, meaning that the first observation is empty i.e. the first va
-                    z = np.array([2, 2, 2]).reshape(3, 1)
+            z = z.reshape(self.m, 1)
+            if np.isnan(z).any():# all the missing values
+                
+                if not predictions_state: #if predictions are empty, meaning that the first observation is empty i.e. the first va
+                    z = np.array(np.full(self.m,2)).reshape(self.m,1)
                 else:
-                    expected_mean = np.random.normal(
-                        predictions_state[-1], predictions_cov[-1]
-                    )  # sampling from the last observed step
-                    z = H @ expected_mean  # from latent to observed state
+                    expected_mean = np.random.normal(predictions_state[-1],predictions_cov[-1]) # sampling from the last observed step
+                    z = self.H @ expected_mean #from latent to observed state
 
             self.update(z)
             predictions_dummy, prediction_dummy_cov = self.predict()
