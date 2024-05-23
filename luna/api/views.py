@@ -366,15 +366,15 @@ def enroll_module(request, student_id):
 
 @api_view(["GET"])
 def get_student_modules(request, student_id):
-
     student_modules = StudentModule.objects.filter(
         student__user_id=student_id
     ).select_related("module")
 
     modules = [sm.module for sm in student_modules]
 
-    # serializer = EnrolledModulesSerializer(modules, many=True)
-    serializer = ModuleSerializer(modules, many=True)
+    serializer = ModuleSerializer(
+        modules, many=True, context={"student_id": student_id}
+    )
     return Response(serializer.data)
 
 

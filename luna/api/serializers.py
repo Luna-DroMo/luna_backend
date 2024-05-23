@@ -36,9 +36,23 @@ class StudentUserSerializer(serializers.ModelSerializer):
 
 # This one is for module serializer. Since it has built-in support for create update, now no need to add them.
 class ModuleSerializer(serializers.ModelSerializer):
+    survey_end_date = serializers.SerializerMethodField()
+
     class Meta:
         model = Module
         exclude = ("password", "created_at")
+
+    def get_survey_end_date(self, obj):
+        student_id = self.context.get("student_id")
+        if student_id:
+            active_survey = StudentSurvey.objects.filter(
+                student__user_id=student_id,
+                module=obj,
+                status=StudentSurvey.Status.ACTIVE,
+            ).first()
+            if active_survey:
+                return active_survey.end_date
+        return None
 
 
 class FormSerializer(serializers.ModelSerializer):
@@ -196,8 +210,9 @@ class StudentModuleSerializerWithSurveys(serializers.Serializer):
 
     module_name = serializers.CharField(source="module.name", read_only=True)
     module_code = serializers.CharField(source="module.code", read_only=True)
+    module_id = serializers.CharField(source="module.id", read_only=True)
     survey_end_date = serializers.SerializerMethodField()
-    survey_is_active = serializers.SerializerMethodField()
+    survey_resolution = serializers.SerializerMethodField()
     survey_created_at = serializers.SerializerMethodField()
     survey_id = serializers.SerializerMethodField()
 
@@ -207,32 +222,34 @@ class StudentModuleSerializerWithSurveys(serializers.Serializer):
             "module_name",
             "module_code",
             "survey_end_date",
-            "survey_is_active",
+            "survey_resolution",
             "survey_created_at",
             "survey_id",
+            "module_id",
+            "survey_end_date",
         ]
 
     def get_survey_end_date(self, obj):
         survey = StudentSurvey.objects.filter(
-            student=obj.student, module=obj.module, is_active=True
+            student=obj.student, module=obj.module, status=StudentSurvey.Status.ACTIVE
         ).first()
         return survey.end_date if survey else None
 
-    def get_survey_is_active(self, obj):
+    def get_survey_resolution(self, obj):
         survey = StudentSurvey.objects.filter(
-            student=obj.student, module=obj.module, is_active=True
+            student=obj.student, module=obj.module, status=StudentSurvey.Status.ACTIVE
         ).first()
-        return survey.is_active if survey else False
+        return survey.resolution if survey else None
 
     def get_survey_created_at(self, obj):
         survey = StudentSurvey.objects.filter(
-            student=obj.student, module=obj.module, is_active=True
+            student=obj.student, module=obj.module, status=StudentSurvey.Status.ACTIVE
         ).first()
         return survey.created_at if survey else None
 
     def get_survey_id(self, obj):
         survey = StudentSurvey.objects.filter(
-            student=obj.student, module=obj.module, is_active=True
+            student=obj.student, module=obj.module, status=StudentSurvey.Status.ACTIVE
         ).first()
         return survey.id if survey else None
 
