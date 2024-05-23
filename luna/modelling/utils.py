@@ -3,9 +3,10 @@ from . import model_settings as MS
 import numpy as np
 from rest_framework.response import Response
 from core.models import StudentUser, Module, StudentSurvey
-from .models import FormResults
+from .models import FormResults, SurveyResults
 from django.utils import timezone
 from .serializers import FormResultsSerializer
+from core.func import convert_dictionary
 
 
 def run_model(student_id, module_id):
@@ -21,18 +22,24 @@ def run_model(student_id, module_id):
         )
 
         data = surveys.values_list("content", flat=True)
-        # background_data (panas) = modelling.form.panas_response.values
 
-        print(data)
+        # Convert and process each survey
+        surveys_matrix = []
 
-        survey_data = np.array(list(data))
+        for survey in data:
+            converted_values = convert_dictionary(survey)
+            surveys_matrix.append(converted_values)
+
+        print(surveys_matrix)
+
+        survey_data = np.array(surveys_matrix)
 
         print("Student ID, ModuleID", student_id, module_id)
         print("Survey data:", survey_data)
 
         kalman_filter = KalmanFilter(F=MS.F, H=MS.H, Q=MS.Q, R=MS.R, x0=MS.x0)
 
-        print("BUMBLEBEE: Running model...", survey_data)
+        print("Running model...", survey_data)
 
         raw_state, predictions_cov, predictions_obs = kalman_filter.forward(
             survey_data  # eg np.array([[2], [3], [1]])
@@ -49,7 +56,7 @@ def run_model(student_id, module_id):
         for survey, r_state, s_state, r_cov, s_cov in zip(
             surveys, raw_state, smooth_state, predictions_cov, cov_smooth
         ):
-            Results.objects.update_or_create(
+            SurveyResults.objects.update_or_create(
                 student=student_instance,
                 module=module_instance,
                 SurveyNumber_T=survey.survey_number,  # Use the survey number directly
@@ -95,7 +102,7 @@ def process_form(content, student_form):
 
         elif student_form.form.name == "MOTIVATION":
             # Perform element-wise multiplication and divide by 22
-            result = (response_array @ l_motivation) / 22
+            result = (response_array @ l_motivation) / len(response_array)
             result_list = (
                 [result] if isinstance(result, (float, np.float64)) else result.tolist()
             )

@@ -234,6 +234,9 @@ def get_background_status(request, student_id):
         "percentage": percentage,
         "completed_forms": completed_form_types,
         "not_completed_forms": not_completed_form_types,
+        "form_status": (
+            "completed" if len(not_completed_form_types) == 0 else "not_completed"
+        ),
     }
 
     print(not_completed_form_types)
@@ -446,4 +449,13 @@ def get_active_surveys(request, student_id):
         student=student, status=StudentSurvey.Status.ACTIVE
     )
     serializer = ActiveSurveySerializer(surveys, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_survey_module(request, student_id, survey_id):
+    student = get_object_or_404(StudentUser, pk=student_id)
+    survey = get_object_or_404(StudentSurvey, pk=survey_id, student=student)
+    module = get_object_or_404(Module, id=survey.module_id)
+    serializer = ModuleSerializer(module)  # Directly pass the module instance
     return Response(serializer.data)
