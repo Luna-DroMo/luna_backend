@@ -5,7 +5,7 @@ from .models import User, StudentUser
 class UserSerializer(serializers.ModelSerializer):
     class Meta(object):
         model = User
-        fields = "__all__"
+        exclude = ("password",)
 
 
 class StudentUserSerializer(serializers.ModelSerializer):
