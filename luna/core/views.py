@@ -65,3 +65,8 @@ def signup(request):
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST,
     )
+
+
+@api_view(["GET"])
+def ping(request):
+    return Response({"ping": "pong"})

@@ -42,6 +42,9 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
+from modelling.utils import run_model
+from modelling.models import Results
+
 
 class TestView(APIView):
     permission_classes = [IsAuthenticated]
@@ -167,8 +170,6 @@ class SurveyView(APIView):
             return Response(
                 "Survey already completed.", status=status.HTTP_400_BAD_REQUEST
             )
-        if survey.is_active is False:
-            return Response("Survey is not active.", status=status.HTTP_400_BAD_REQUEST)
 
         content_array = request.data
         if not isinstance(content_array, list):
@@ -179,10 +180,12 @@ class SurveyView(APIView):
 
         # Update the survey's content with the array and mark it as completed
         survey.content = content_array
-        survey.survey_status = StudentSurvey.SurveyStatus.COMPLETED
+        survey.resolution = StudentSurvey.Resolution.COMPLETED
+        survey.status = StudentSurvey.Status.ARCHIVED
         survey.save()
 
         serializer = StudentSurveySerializer(survey)
+        run_model(survey.student_id, survey.module_id)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

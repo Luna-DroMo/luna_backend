@@ -9,10 +9,4 @@ class Migration(migrations.Migration):
         ("core", "0017_alter_module_faculty"),
     ]
 
-    operations = [
-        migrations.AddField(
-            model_name="module",
-            name="survey_days",
-            field=DayOfTheWeekField(null=True, blank=True),
-        )
-    ]
+    operations = []
