@@ -24,6 +24,6 @@ python3 manage.py runserver 0.0.0.0:8000 &
 echo "Starting django-cron jobs..."
 while true; do
     python3 manage.py runcrons
-    sleep 60
+    sleep 3600
 done
 
