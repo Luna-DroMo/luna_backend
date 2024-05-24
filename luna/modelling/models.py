@@ -21,3 +21,20 @@ class FormResults(models.Model):
     id = models.AutoField(primary_key=True)
     student_form = models.ForeignKey(StudentForm, on_delete=models.SET_NULL, null=True)
     results = ArrayField(models.FloatField(), null=True, blank=True)
+
+    def student_name(self):
+        if self.student_form and self.student_form.student:
+            return (
+                self.student_form.student.user.first_name
+                + " "
+                + self.student_form.student.user.last_name
+            )
+        return None
+
+    def form_name(self):
+        if self.student_form and self.student_form.form:
+            return self.student_form.form.name
+        return None
+
+    student_name.short_description = "Student Name"
+    form_name.short_description = "Form Name"
