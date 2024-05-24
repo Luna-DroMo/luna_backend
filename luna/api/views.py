@@ -36,14 +36,15 @@ from .serializers import (
     UniversitySerializer,
     FacultySerializer,
     ActiveSurveySerializer,
+    BasicStudentFormSerializer,
+    SurveyInformationSerializer,
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-from modelling.utils import run_model
-from modelling.models import Results
+from modelling.utils import run_model, process_form
 
 
 class TestView(APIView):
@@ -92,9 +93,8 @@ class StudentFormsView(APIView):
             )
 
     def post(self, request, student_id, form_id):
-
         try:
-            student = StudentUser.objects.get(pk=student_id)
+            student = get_object_or_404(StudentUser, pk=student_id)
         except StudentUser.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -102,42 +102,49 @@ class StudentFormsView(APIView):
             student_form = StudentForm.objects.select_related("form").get(
                 student_id=student_id, form_id=form_id
             )
-
-            question_ids = {
-                question["question_id"]
-                for question in student_form.form.content["questions"]
-            }
-
-            submitted_responses = request.data
-            submitted_question_ids = {
-                response["question_id"] for response in submitted_responses
-            }
-
-            if question_ids != submitted_question_ids:
-                return Response(
-                    {"error": "All questions must be answered."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            if student_form.content:
-                return Response(
-                    {"error": "Response already submitted."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            student_form.content = submitted_responses
-            student_form.resolution = "COMPLETED"
-            student_form.submitted_at = timezone.now()
-            student_form.save()
-
-            return Response({"message": "Form submitted successfully."})
-
         except StudentForm.DoesNotExist:
             return Response(
                 {"error": "Student form not found."}, status=status.HTTP_404_NOT_FOUND
             )
+
+        if student_form.content:
+            return Response(
+                {"error": "Response already submitted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            submitted_responses = request.data
+
+            # Convert the submitted responses into the desired format
+            response_dict = {
+                response["question_id"]: response["value"]
+                for response in submitted_responses
+            }
+
+            student_form.content = response_dict
+            student_form.resolution = "COMPLETED"
+            student_form.submitted_at = timezone.now()
+            student_form.save()
+
+            # Process the form based on its type
+            try:
+                process_form(response_dict, student_form)
+            except Exception as e:
+                print("Error processing form:", str(e))
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = BasicStudentFormSerializer(student_form)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print("Unexpected error:", str(e))
+            return Response(
+                {"error": "An unexpected error occurred."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class StudentView(APIView):
@@ -152,7 +159,7 @@ class SurveyView(APIView):
         student = get_object_or_404(StudentUser, pk=student_id)
         try:
             survey = StudentSurvey.objects.get(
-                pk=survey_id, student=student, is_active=True
+                pk=survey_id, student=student, status=StudentSurvey.Status.ACTIVE
             )
         except StudentSurvey.DoesNotExist:
             raise Http404("No StudentSurvey matches the given query.")
@@ -210,8 +217,8 @@ def get_background_status(request, student_id):
         resolution=StudentForm.ResolutionStatus.COMPLETED
     )
 
-    completed_form_types = [form.form.form_type for form in completed_forms]
-    not_completed_form_types = [form.form.form_type for form in not_completed_forms]
+    completed_form_types = [form.form.name for form in completed_forms]
+    not_completed_form_types = [form.form.name for form in not_completed_forms]
 
     percentage = (
         int((len(completed_form_types) / total_forms) * 100) if total_forms > 0 else 0
@@ -220,10 +227,6 @@ def get_background_status(request, student_id):
     personal_info_fields = [
         student.first_name,
         student.last_name,
-        student.birth_date,
-        student.abitur_note,
-        student.main_language,
-        student.financial_support,
     ]
     personal_info = all(field is not None for field in personal_info_fields)
 
@@ -232,7 +235,12 @@ def get_background_status(request, student_id):
         "percentage": percentage,
         "completed_forms": completed_form_types,
         "not_completed_forms": not_completed_form_types,
+        "form_status": (
+            "completed" if len(not_completed_form_types) == 0 else "not_completed"
+        ),
     }
+
+    print(not_completed_form_types)
 
     serializer = BackgroundStatusSerializer(data=data)
 
@@ -358,15 +366,15 @@ def enroll_module(request, student_id):
 
 @api_view(["GET"])
 def get_student_modules(request, student_id):
-
     student_modules = StudentModule.objects.filter(
         student__user_id=student_id
     ).select_related("module")
 
     modules = [sm.module for sm in student_modules]
 
-    # serializer = EnrolledModulesSerializer(modules, many=True)
-    serializer = ModuleSerializer(modules, many=True)
+    serializer = ModuleSerializer(
+        modules, many=True, context={"student_id": student_id}
+    )
     return Response(serializer.data)
 
 
@@ -438,6 +446,27 @@ def get_university_modules(request, student_id):
 @api_view(["GET"])
 def get_active_surveys(request, student_id):
     student = get_object_or_404(StudentUser, pk=student_id)
-    surveys = StudentSurvey.objects.filter(student=student, is_active=True)
+    surveys = StudentSurvey.objects.filter(
+        student=student, status=StudentSurvey.Status.ACTIVE
+    )
     serializer = ActiveSurveySerializer(surveys, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_survey_details(request, student_id, survey_id):
+    student = get_object_or_404(StudentUser, pk=student_id)
+    try:
+        survey = StudentSurvey.objects.get(
+            pk=survey_id,
+            student=student,
+        )
+        print(f"Survey: {survey}")
+        print(f"Survey Number: {survey.survey_number}")
+        print(f"End Date: {survey.end_date}")
+    except StudentSurvey.DoesNotExist:
+        raise Http404("No StudentSurvey matches the given query.")
+
+    serializer = SurveyInformationSerializer(survey)
+    print(f"Serialized Data: {serializer.data}")
     return Response(serializer.data)
