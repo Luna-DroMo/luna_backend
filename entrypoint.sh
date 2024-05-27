@@ -22,8 +22,8 @@ python3 manage.py migrate
 python3 manage.py runserver 0.0.0.0:8000 &
 
 echo "Starting django-cron jobs..."
-while true; do
-    python3 manage.py runcrons
-    sleep 3600
-done
+# while true; do
+#     python3 manage.py runcrons
+#     sleep 3600
+# done
 
