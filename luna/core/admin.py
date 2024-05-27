@@ -23,7 +23,7 @@ class StudentSurveyAdmin(admin.ModelAdmin):
         "status",
         "resolution",
     )
-    readonly_fields = ("survey_number",)
+    readonly_fields = ("survey_number", "created_at", "updated_at")
     search_fields = (
         "name",
         "student__first_name",
@@ -35,7 +35,7 @@ class StudentSurveyAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {"fields": ("name", "student", "module", "survey_number")}),
-        ("Dates", {"fields": ("created_at", "updated_at", "start_date", "end_date")}),
+        ("Dates", {"fields": ("created_at", "start_date", "end_date")}),
         ("Status", {"fields": ("status", "resolution")}),
         ("Content", {"fields": ("content",)}),
     )
