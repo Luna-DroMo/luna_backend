@@ -58,6 +58,7 @@ class ModuleView(APIView):
     # permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+
         student_id = self.kwargs.get("student_id")
         student_modules = StudentModule.objects.filter(
             student_id=student_id
@@ -337,30 +338,37 @@ def getUserType(request, id):
 # @permission_classes([IsAuthenticated])
 def enroll_module(request, student_id):
 
+    action = request.data["action"]
     module_code = request.data["module_code"]
-    password = request.data["password"]
 
-    student = get_object_or_404(StudentUser, pk=student_id)
-    module = Module.objects.filter(code=module_code).first()
-    if not module:
-        return Response(
-            {"error": "Module not found."}, status=status.HTTP_404_NOT_FOUND
-        )
+    if action == "disenroll":
+        StudentModule.objects.filter(
+            student_id=student_id, module__code=module_code
+        ).delete()
+        return Response(status=status.HTTP_200_OK, data={"message": "Module removed."})
+    elif action == "enroll":
+        password = request.data["password"]
+        student = get_object_or_404(StudentUser, pk=student_id)
+        module = Module.objects.filter(code=module_code).first()
+        if not module:
+            return Response(
+                {"error": "Module not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
-    if module.password != password:
-        return Response(
-            {"error": "Incorrect password."}, status=status.HTTP_400_BAD_REQUEST
-        )
+        if module.password != password:
+            return Response(
+                {"error": "Incorrect password."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-    # Check if the student is already enrolled in the module
-    if StudentModule.objects.filter(student=student, module=module).exists():
-        return Response(
-            {"error": "Student is already registered for this module."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        # Check if the student is already enrolled in the module
+        if StudentModule.objects.filter(student=student, module=module).exists():
+            return Response(
+                {"error": "Student is already registered for this module."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-    student_module = StudentModule.objects.create(student=student, module=module)
-    response_serializer = StudentModuleSerializer(student_module)
+        student_module = StudentModule.objects.create(student=student, module=module)
+        response_serializer = StudentModuleSerializer(student_module)
     return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
