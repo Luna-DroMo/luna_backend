@@ -11,6 +11,7 @@ from core.func import convert_dictionary
 
 def run_model(student_id, module_id):
     try:
+        print("Model Started", student_id, module_id)
         if not student_id or not module_id:
             return Response({"error": "Missing student_id or module_id"}, status=400)
 
@@ -22,7 +23,7 @@ def run_model(student_id, module_id):
         )
 
         data = surveys.values_list("content", flat=True)
-
+        print("Data", data)
         # Convert and process each survey
         surveys_matrix = []
 
@@ -30,7 +31,7 @@ def run_model(student_id, module_id):
             converted_values = convert_dictionary(survey)
             surveys_matrix.append(converted_values)
 
-        print(surveys_matrix)
+        print("Survey matrix", surveys_matrix)
 
         survey_data = np.array(surveys_matrix)
 
