@@ -40,7 +40,7 @@ class ModuleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Module
-        exclude = ("created_at")
+        exclude = ["created_at"]
 
     def get_survey_end_date(self, obj):
         student_id = self.context.get("student_id")
