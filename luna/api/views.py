@@ -38,6 +38,7 @@ from .serializers import (
     ActiveSurveySerializer,
     BasicStudentFormSerializer,
     SurveyInformationSerializer,
+    LecturerModuleSerializer,
 )
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -406,7 +407,7 @@ def get_university_faculties(request, university_id):
 def get_lecturer_modules(request, lecturer_id):
     lecturer = get_object_or_404(User, pk=lecturer_id)
     modules = Module.objects.filter(owners_id=lecturer)
-    serializer = ModuleSerializer(modules, many=True)
+    serializer = LecturerModuleSerializer(modules, many=True)
     return Response(serializer.data)
 
 

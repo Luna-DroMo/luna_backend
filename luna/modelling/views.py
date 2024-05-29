@@ -43,7 +43,7 @@ def get_student_module_modelling_results(request, student_id, module_id):
 
 
 @api_view(["GET"])
-def get_module_modelling_results(request, user_id, module_id):
+def get_module_modelling_results(request, module_id):
     module = get_object_or_404(Module, pk=module_id)
     module_results = (
         SurveyResults.objects.filter(module=module)

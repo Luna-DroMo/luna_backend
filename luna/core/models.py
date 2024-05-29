@@ -234,10 +234,13 @@ class StudentSurvey(models.Model):
                 student=self.student, module=self.module
             ).count()
             self.survey_number = current_count + 1
+            # Set the name field
+
+        self.name = f"{self.module.code} - {self.student.first_name}"
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.module.name} - {self.student.first_name}"
+        return f"{self.module.code} - {self.student.first_name}"
 
 
 class University(models.Model):

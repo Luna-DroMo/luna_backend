@@ -40,7 +40,7 @@ class ModuleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Module
-        exclude = ("password", "created_at")
+        exclude = ("created_at")
 
     def get_survey_end_date(self, obj):
         student_id = self.context.get("student_id")
@@ -53,6 +53,21 @@ class ModuleSerializer(serializers.ModelSerializer):
             if active_survey:
                 return active_survey.end_date
         return None
+
+
+class LecturerModuleSerializer(serializers.ModelSerializer):
+
+    module_name = serializers.CharField(source="name", required=False)
+    module_code = serializers.CharField(source="code", required=False)
+    module_id = serializers.CharField(source="id", required=False)
+
+    class Meta:
+        model = Module
+        fields = [
+            "module_name",
+            "module_code",
+            "module_id",
+        ]
 
 
 class FormSerializer(serializers.ModelSerializer):
