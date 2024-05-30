@@ -3,6 +3,7 @@ from django.utils import timezone
 from datetime import timedelta
 from core.models import Module, StudentSurvey, StudentModule
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +104,39 @@ class Command(BaseCommand):
         )
 
         if expired_surveys.exists():
-            count = expired_surveys.update(status=StudentSurvey.Status.ARCHIVED)
+            count = expired_surveys.update(
+                status=StudentSurvey.Status.ARCHIVED, content=json.dumps(data)
+            )
             self.stdout.write(self.style.SUCCESS(f"Archived {count} expired surveys."))
         else:
             self.stdout.write(self.style.SUCCESS("No surveys to archive."))
+
+
+data = [
+    {"id": 0, "value": 0},
+    {"id": 1, "value": 0},
+    {"id": 2, "value": 0},
+    {"id": 3, "value": 0},
+    {"id": 4, "value": 0},
+    {"id": 5, "value": 0},
+    {"id": 6, "value": 0},
+    {"id": 7, "value": 0},
+    {"id": 8, "value": 0},
+    {"id": 9, "value": 0},
+    {"id": 10, "value": 0},
+    {"id": 11, "value": 0},
+    {"id": 14, "value": 0},
+    {"id": 13, "value": 0},
+    {"id": 12, "value": 0},
+    {"id": 15, "value": 0},
+    {"id": 16, "value": 0},
+    {"id": 17, "value": 0},
+    {"id": 18, "value": 0},
+    {"id": 19, "value": 0},
+    {"id": 20, "value": 0},
+    {"id": 21, "value": 0},
+    {"id": 23, "value": 0},
+    {"id": 24, "value": 0},
+    {"id": 25, "value": 0},
+    {"id": 22, "value": 0},
+]

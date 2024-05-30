@@ -479,3 +479,15 @@ def get_survey_details(request, student_id, survey_id):
     serializer = SurveyInformationSerializer(survey)
     print(f"Serialized Data: {serializer.data}")
     return Response(serializer.data)
+
+
+def delete_module(request, user_id, module_id):
+    module = get_object_or_404(Module, pk=module_id)
+    user = User.objects.get(pk=user_id)
+    if user.UserType == 1:
+        return Response(
+            {"error": "Only lecturers can delete modules."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    module.delete()
+    return Response(status=status.HTTP_200_OK)
