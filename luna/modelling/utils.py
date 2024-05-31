@@ -42,15 +42,6 @@ def run_model(student_id, module_id):
 
         print("Processing surveys...", data)
         for survey in data:
-<<<<<<< HEAD
-            if survey is None:
-                surveys_matrix.append(np.full((1, 26), np.nan))
-            else:
-                converted_values = convert_dictionary(survey)
-                surveys_matrix.append(converted_values)
-
-        print("FORM DATA:", surveys_matrix.shape)
-=======
             print(surveys_matrix)
             if survey is None:
                 print("Survey is None")
@@ -62,7 +53,6 @@ def run_model(student_id, module_id):
                 surveys_matrix.append(converted_values)
 
         print("Survey Matrx", surveys_matrix)
->>>>>>> cd1aea3 (modelling)
 
         for form in form_data:
             converted_values = convert_form_dictionary(form)
