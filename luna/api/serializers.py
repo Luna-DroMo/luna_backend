@@ -57,16 +57,12 @@ class ModuleSerializer(serializers.ModelSerializer):
 
 class LecturerModuleSerializer(serializers.ModelSerializer):
 
-    module_name = serializers.CharField(source="name", required=False)
-    module_code = serializers.CharField(source="code", required=False)
-    module_id = serializers.CharField(source="id", required=False)
-
     class Meta:
         model = Module
         fields = [
-            "module_name",
-            "module_code",
-            "module_id",
+            "name",
+            "code",
+            "id",
         ]
 
 
