@@ -26,7 +26,6 @@ def run_model(student_id, module_id):
         surveys = StudentSurvey.objects.filter(
             student_id=student_id, module_id=module_id
         )
-
         forms = StudentForm.objects.filter(
             student_id=student_id,
             form_id=9,
@@ -35,17 +34,20 @@ def run_model(student_id, module_id):
         data = surveys.values_list("content", flat=True)
         form_data = forms.values_list("content", flat=True)
 
-        # print("DATA--> ", data)
+        print("DATA--> ", data)
         # print("FORM DATA-->", form)
         # Convert and process each survey
         surveys_matrix = []
         form_matrix = []
 
         for survey in data:
-            converted_values = convert_dictionary(survey)
-            surveys_matrix.append(converted_values)
+            if survey is None:
+                surveys_matrix.append(np.full((1, 26), np.nan))
+            else:
+                converted_values = convert_dictionary(survey)
+                surveys_matrix.append(converted_values)
 
-        print("FORM DATA:", form_data)
+        print("FORM DATA:", surveys_matrix.shape)
 
         for form in form_data:
             converted_values = convert_form_dictionary(form)
