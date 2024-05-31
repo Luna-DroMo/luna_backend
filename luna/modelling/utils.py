@@ -120,7 +120,7 @@ def process_form(content, student_form):
 
         if student_form.form.name == "PANAS":
             # Perform matrix multiplication
-            result = np.dot(response_array, l_panas)
+            result = np.dot(response_array, panas_loadings)
             print("PANAS result:", result)
             # Save the results using the serializer
             data = {"student_form": student_form.pk, "results": result.tolist()}
