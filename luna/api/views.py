@@ -480,8 +480,9 @@ def get_survey_details(request, student_id, survey_id):
     print(f"Serialized Data: {serializer.data}")
     return Response(serializer.data)
 
-
+@api_view(["POST"])
 def delete_module(request, user_id, module_id):
+    # NEED TO MAKE SURE USER IS THE OWNER OF THE MODULE TOO
     module = get_object_or_404(Module, pk=module_id)
     user = User.objects.get(pk=user_id)
     if user.UserType == 1:
