@@ -6,7 +6,12 @@ from core.models import StudentUser, Module, StudentSurvey, StudentForm
 from .models import FormResults, SurveyResults
 from django.utils import timezone
 from .serializers import FormResultsSerializer
-from core.func import convert_dictionary
+from core.func import (
+    convert_dictionary,
+    convert_form_dictionary,
+    merge_survey_with_form,
+)
+from .form_loadings import panas_loadings
 
 
 def run_model(student_id, module_id):
@@ -24,35 +29,47 @@ def run_model(student_id, module_id):
 
         forms = StudentForm.objects.filter(
             student_id=student_id,
+            form_id=9,
         )
 
         data = surveys.values_list("content", flat=True)
-        form_data = surveys.values_list("content", flat=True)
+        form_data = forms.values_list("content", flat=True)
 
-        print("Data", data, form_data)
+        # print("DATA--> ", data)
+        # print("FORM DATA-->", form)
         # Convert and process each survey
         surveys_matrix = []
+        form_matrix = []
 
         for survey in data:
             converted_values = convert_dictionary(survey)
             surveys_matrix.append(converted_values)
 
-        print("Survey matrix", surveys_matrix)
+        print("FORM DATA:", form_data)
+
+        for form in form_data:
+            converted_values = convert_form_dictionary(form)
+            form_matrix.append(converted_values)
 
         survey_data = np.array(surveys_matrix)
+        form_data = np.array(form_matrix)
+        print("Form data:", form_data.shape)
+        pa_na = (form_data @ panas_loadings).flatten()
+        print(pa_na)
 
-        print("Student ID, ModuleID", student_id, module_id)
-        print("Survey data:", survey_data)
+        merged_data = merge_survey_with_form(survey_data, pa_na)
+        print("Merged data:", merged_data)
+
+        # print("Student ID, ModuleID", student_id, module_id, "\n")
+        # print("Survey data:", survey_data, "\n")
+        # print("Form data:", form_data, "\n")
 
         kalman_filter = KalmanFilter(F=MS.F, H=MS.H, Q=MS.Q, R=MS.R, x0=MS.x0)
 
-        print("Running model...", survey_data)
-        print("Survey Data Shape: ", survey_data.shape)
+        # print("Running model...", survey_data)
+        # print("Survey Data Shape: ", survey_data.shape)
 
-        raw_state, predictions_cov, predictions_obs = kalman_filter.forward(
-            survey_data  # eg np.array([[2], [3], [1]])
-            # data = np.concat(survey_data, background_data)
-        )
+        raw_state, predictions_cov, predictions_obs = kalman_filter.forward(merged_data)
 
         smooth_state, cov_smooth, K = kalman_filter.smooth(
             np.array(raw_state), np.array(predictions_cov)
@@ -151,33 +168,6 @@ def process_form(content, student_form):
 # First Entry relates to PA (postive)
 # Second Entry relates to NA (negative)
 
-# This is a 20x2 matrix. Use as follows:
-# PANAS response: vector of length 20, or matrix of 1x20
-# panas_response @ l_aist -> 1x20 @ 20x2 = 1x2 matrix containing PA and NA measurements
-l_panas = np.array(
-    [
-        [0.67, 0],  # Attentive / Aufmerksam
-        [0, 0.71],  # Nervous / Nervös
-        [0.70, 0],  # Determined / Entschlossen
-        [0, 0.70],  # Scared / Erschocken
-        [0.58, 0],  # Proud / Stolz
-        [0, 0.46],  # Guilty / Schuldig
-        [0.71, 0],  # Strong / Stark
-        [0, 0.55],  # Irritable / Gereizt
-        [0.66, 0],  # Active / Aktiv
-        [0, 0.70],  # Afraid / Ǎngstlich
-        [0.64, 0],  # Interessested / Interssiert
-        [0, 0.38],  # Hostile / Feindselig
-        [0.79, 0],  # Enthusiastic / Begeistert
-        [0, 0.49],  # Ashamed / Beschämt
-        [0.71, 0],  # Inpsired / Angeregt
-        [0, 0.66],  # Jittery / Durcheinander
-        [0.72, 0],  # Alert / Wach
-        [0, 0.64],  # Distressed / Bekümmert
-        [0.44, 0],  # Excited / Freudig Erregt
-        [0, 0.60],  # Upset / Verärgert
-    ]
-)
 
 # Motivation
 # This we just use the sum score (as in, the sum of the responses).
