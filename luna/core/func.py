@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def convert_dictionary(dict_list):
     result = [item["value"] + 1 for item in dict_list]
     return result
@@ -22,4 +25,11 @@ def convert_form_dictionary(dict_list):
                 print("Encountered non-dictionary item:", item)
     else:
         print("Input is not a list:", dict_list)
+    return result
+
+
+def merge_survey_with_form(survey, form):
+    """Merges a survey (or already concatenated matrix) with interindividual data"""
+    form_extended = np.broadcast_to(form, (survey.shape[0], form.shape[0]))
+    result = np.concatenate((survey, form_extended), axis=1)
     return result

@@ -37,7 +37,6 @@ class StudentSurveyAdmin(admin.ModelAdmin):
         (None, {"fields": ("name", "student", "module", "survey_number")}),
         ("Dates", {"fields": ("created_at", "start_date", "end_date")}),
         ("Status", {"fields": ("status", "resolution")}),
-        ("Content", {"fields": ("content",)}),
     )
 
     actions = ["archive_surveys"]
