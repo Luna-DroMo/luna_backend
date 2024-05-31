@@ -22,18 +22,8 @@ def run(request):
 @api_view(["GET"])
 def get_student_module_modelling_results(request, student_id, module_id):
     module = get_object_or_404(Module, pk=module_id)
-    module_results = (
-        SurveyResults.objects.filter(module=module)
-        .values("SurveyNumber_T")
-        .annotate(
-            mean_smoothed_output=Avg("smoothed_output"),
-            std_smoothed_output=StdDev(
-                "smoothed_output"
-            ),  # Calculate standard deviation
-        )
-        .order_by("SurveyNumber_T")
-    )
-    serializer = Module_Results_Serializer(module_results, many=True)
+    module_results = SurveyResults.objects.filter(module=module, student=student_id)
+    serializer = Student_Module_Results_Serializer(module_results, many=True)
 
     response_data = {
         "weekly_results": serializer.data,
