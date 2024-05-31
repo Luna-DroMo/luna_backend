@@ -6,7 +6,7 @@ from core.models import StudentUser, Module, StudentSurvey, StudentForm
 from .models import FormResults, SurveyResults
 from django.utils import timezone
 from .serializers import FormResultsSerializer
-from core.func import convert_dictionary
+from core.func import convert_dictionary, convert_form_dictionary
 
 
 def run_model(student_id, module_id):
@@ -24,30 +24,42 @@ def run_model(student_id, module_id):
 
         forms = StudentForm.objects.filter(
             student_id=student_id,
+            form_id=9,
         )
 
         data = surveys.values_list("content", flat=True)
-        form_data = surveys.values_list("content", flat=True)
+        form_data = forms.values_list("content", flat=True)
 
-        print("Data", data, form_data)
+        # print("DATA--> ", data)
+        # print("FORM DATA-->", form)
         # Convert and process each survey
         surveys_matrix = []
+        form_matrix = []
 
         for survey in data:
             converted_values = convert_dictionary(survey)
             surveys_matrix.append(converted_values)
 
-        print("Survey matrix", surveys_matrix)
+        print("FORM DATA:", form_data)
+
+        for form in form_data:
+            converted_values = convert_form_dictionary(form)
+            form_matrix.append(converted_values)
 
         survey_data = np.array(surveys_matrix)
+        form_data = np.array(form_matrix)
 
-        print("Student ID, ModuleID", student_id, module_id)
-        print("Survey data:", survey_data)
+        form_data = [f for f in form_data if f is not None]
+        print("Form data:", form_data)
+
+        # print("Student ID, ModuleID", student_id, module_id, "\n")
+        # print("Survey data:", survey_data, "\n")
+        # print("Form data:", form_data, "\n")
 
         kalman_filter = KalmanFilter(F=MS.F, H=MS.H, Q=MS.Q, R=MS.R, x0=MS.x0)
 
-        print("Running model...", survey_data)
-        print("Survey Data Shape: ", survey_data.shape)
+        # print("Running model...", survey_data)
+        # print("Survey Data Shape: ", survey_data.shape)
 
         raw_state, predictions_cov, predictions_obs = kalman_filter.forward(
             survey_data  # eg np.array([[2], [3], [1]])
