@@ -95,4 +95,9 @@ urlpatterns = [
         views.get_survey_details,
         name="get_survey_module",
     ),
+    path(
+        "<int:user_id>/module/<int:module_id>/delete",
+        views.delete_module,
+        name="delete_module",
+    ),
 ]

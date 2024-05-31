@@ -2,7 +2,7 @@ from .modelling import KalmanFilter
 from . import model_settings as MS
 import numpy as np
 from rest_framework.response import Response
-from core.models import StudentUser, Module, StudentSurvey
+from core.models import StudentUser, Module, StudentSurvey, StudentForm
 from .models import FormResults, SurveyResults
 from django.utils import timezone
 from .serializers import FormResultsSerializer
@@ -22,8 +22,14 @@ def run_model(student_id, module_id):
             student_id=student_id, module_id=module_id
         )
 
+        forms = StudentForm.objects.filter(
+            student_id=student_id,
+        )
+
         data = surveys.values_list("content", flat=True)
-        print("Data", data)
+        form_data = surveys.values_list("content", flat=True)
+
+        print("Data", data, form_data)
         # Convert and process each survey
         surveys_matrix = []
 
@@ -42,6 +48,7 @@ def run_model(student_id, module_id):
 
         print("Running model...", survey_data)
         print("Survey Data Shape: ", survey_data.shape)
+
         raw_state, predictions_cov, predictions_obs = kalman_filter.forward(
             survey_data  # eg np.array([[2], [3], [1]])
             # data = np.concat(survey_data, background_data)
