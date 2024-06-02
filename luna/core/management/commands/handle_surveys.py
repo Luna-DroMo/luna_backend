@@ -4,6 +4,7 @@ from datetime import timedelta
 from core.models import Module, StudentSurvey, StudentModule
 import logging
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -11,7 +12,11 @@ class Command(BaseCommand):
     help = "Generate new survey and activate module instances"
 
     def handle(self, *args, **options):
+
         try:
+
+            # Archive surveys whose end_date is today
+            self.archive_expired_surveys()
 
             active_modules = Module.objects.filter(
                 start_date__lte=timezone.now(), end_date__gte=timezone.now()
@@ -52,12 +57,21 @@ class Command(BaseCommand):
                 else:
                     print(f"No student modules found for {module.id}")
 
+                today = timezone.now().date()
                 for student_module in student_modules:
-                    StudentSurvey.objects.filter(
+                    active_surveys = StudentSurvey.objects.filter(
                         module=module,
                         student=student_module.student,
                         status=StudentSurvey.Status.ACTIVE,
-                    ).update(status=StudentSurvey.Status.ARCHIVED)
+                    )
+                    # Check if there is an active survey with start_date as today
+                    if active_surveys.filter(start_date=today).exists():
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"Active survey already exists for module: {module.name} and student: {student_module.student} starting today"
+                            )
+                        )
+                        continue  # Skip creating a new survey
 
                     start_date = timezone.now().date()
                     end_date = start_date + timedelta(days=7)
@@ -82,3 +96,17 @@ class Command(BaseCommand):
                 )
         except Exception as e:
             print(e)
+
+    def archive_expired_surveys(self):
+        today = timezone.now().date()
+        expired_surveys = StudentSurvey.objects.filter(
+            end_date__lte=today, status=StudentSurvey.Status.ACTIVE
+        )
+
+        if expired_surveys.exists():
+            count = expired_surveys.update(
+                status=StudentSurvey.Status.ARCHIVED,
+            )
+            self.stdout.write(self.style.SUCCESS(f"Archived {count} expired surveys."))
+        else:
+            self.stdout.write(self.style.SUCCESS("No surveys to archive."))

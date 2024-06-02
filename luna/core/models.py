@@ -115,18 +115,7 @@ class Form(models.Model):
     name = models.CharField(max_length=255)
     content = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
-    created_by_user = models.ForeignKey(
-        "User", on_delete=models.CASCADE, null=True
-    )  # Custom form logic
-
-    class FormType(models.TextChoices):
-        EQ = "EQ", "EQ"
-        IQ = "IQ", "IQ"
-        AIST = "AIST", "AIST"
-
-    form_type = models.CharField(
-        max_length=50, choices=FormType.choices, default=FormType.EQ
-    )
+    created_by_user = models.ForeignKey("User", on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return f"{self.name} - {self.created_by_user}"
@@ -245,10 +234,13 @@ class StudentSurvey(models.Model):
                 student=self.student, module=self.module
             ).count()
             self.survey_number = current_count + 1
+            # Set the name field
+
+        self.name = f"{self.module.code} - {self.student.first_name}"
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.module.name} - {self.student.first_name}"
+        return f"{self.module.code} - {self.student.first_name}"
 
 
 class University(models.Model):
