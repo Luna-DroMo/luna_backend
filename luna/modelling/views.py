@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from core.models import Module, StudentUser, StudentSurvey
 from .models import SurveyResults
 from django.shortcuts import get_object_or_404
-from .serializers import Student_Module_Results_Serializer, Module_Results_Serializer
+from .serializers import FeatureSerializer, Module_Results_Serializer
 from django.db.models import Avg, StdDev
 import json
 from core.func import generate_survey_matrix
@@ -29,24 +29,33 @@ def get_student_module_modelling_results(request, student_id, module_id):
     if not student_surveys:
         return Response({"error": "No survey data for this student."})
 
-    survey_matrix = np.array([])
+    n_surveys = len(student_surveys)
+    survey_matrix = np.zeros((n_surveys, 3))
 
-    for survey in student_surveys:
+    for i, survey in enumerate(student_surveys):
         matrix = generate_survey_matrix(survey.content)
-        survey_matrix = np.append(survey_matrix, matrix)
+        print("SURVEY MATRIX--> ", matrix, type(matrix))
+        temp = extract_features(matrix)
+        print("EXTRACTED FEATURES--> ", temp, type(temp))
+        survey_matrix[i, :] = temp
 
+    survey_matrix = survey_matrix.T  # Each row is a feature, each column is a survey
     print("Survey matrix:", survey_matrix, type(survey_matrix))
-    student_loadings = extract_features(survey_matrix)
-    print("Student loadings:", student_loadings)
 
-    module_results = SurveyResults.objects.filter(module=module, student=student_id)
-    serializer = Student_Module_Results_Serializer(module_results, many=True)
+    feature_keys = ["understanding", "stress", "content"]
+    response = {}
 
-    response_data = {
-        "weekly_results": serializer.data,
-    }
+    for i, feature in enumerate(feature_keys):
+        feature_data = survey_matrix[i, :]
 
-    return Response(response_data)
+        response[feature] = feature_data.tolist()
+
+    serializer = FeatureSerializer(data=response)
+    serializer.is_valid(raise_exception=True)
+
+    print("RESPONSE-->", response)
+
+    return Response(response)
 
 
 @api_view(["GET"])
