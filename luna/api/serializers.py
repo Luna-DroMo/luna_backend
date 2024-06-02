@@ -10,7 +10,7 @@ from core.models import (
     University,
     Faculty,
 )
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -45,13 +45,20 @@ class ModuleSerializer(serializers.ModelSerializer):
     def get_survey_end_date(self, obj):
         student_id = self.context.get("student_id")
         if student_id:
-            active_survey = StudentSurvey.objects.filter(
-                student__user_id=student_id,
-                module=obj,
-                status=StudentSurvey.Status.ACTIVE,
-            ).first()
-            if active_survey:
-                return active_survey.end_date
+            print(
+                f"Fetching last created survey for student_id: {student_id}, module_id: {obj.id}"
+            )
+            try:
+                last_survey = StudentSurvey.objects.filter(
+                    student__user_id=student_id, module=obj
+                ).latest("created_at")
+
+                # Add 7 days to the created_at date
+                end_date = last_survey.created_at + timedelta(days=7)
+                print(f"Found last survey with end_date: {end_date}")
+                return end_date
+            except StudentSurvey.DoesNotExist:
+                print("No survey found")
         return None
 
 
