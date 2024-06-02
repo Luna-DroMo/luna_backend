@@ -2,13 +2,10 @@ from rest_framework import serializers
 from .models import SurveyResults, FormResults
 
 
-class Student_Module_Results_Serializer(serializers.ModelSerializer):
-    week = serializers.IntegerField(source="SurveyNumber_T")
-    result = serializers.JSONField(source="smoothed_output")
-
-    class Meta:
-        model = SurveyResults
-        fields = ("week", "result")
+class FeatureSerializer(serializers.Serializer):
+    understanding = serializers.ListField(child=serializers.FloatField())
+    stress = serializers.ListField(child=serializers.FloatField())
+    content = serializers.ListField(child=serializers.FloatField())
 
 
 class Module_Results_Serializer(serializers.Serializer):

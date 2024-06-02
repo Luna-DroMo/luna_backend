@@ -1,13 +1,15 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .utils import run_model
+from .utils import run_model, extract_features
 from rest_framework.response import Response
-from core.models import Module, StudentUser
+from core.models import Module, StudentUser, StudentSurvey
 from .models import SurveyResults
 from django.shortcuts import get_object_or_404
-from .serializers import Student_Module_Results_Serializer, Module_Results_Serializer
+from .serializers import FeatureSerializer, Module_Results_Serializer
 from django.db.models import Avg, StdDev
-from rest_framework.renderers import JSONRenderer
+import json
+from core.func import generate_survey_matrix
+import numpy as np
 
 
 @api_view(["POST"])
@@ -22,14 +24,51 @@ def run(request):
 @api_view(["GET"])
 def get_student_module_modelling_results(request, student_id, module_id):
     module = get_object_or_404(Module, pk=module_id)
-    module_results = SurveyResults.objects.filter(module=module, student=student_id)
-    serializer = Student_Module_Results_Serializer(module_results, many=True)
+    student_surveys = StudentSurvey.objects.filter(student=student_id, module=module)
 
-    response_data = {
-        "weekly_results": serializer.data,
-    }
+    if not student_surveys:
+        return Response({"error": "No survey data for this student."})
 
-    return Response(response_data)
+    n_surveys = len(student_surveys)
+    survey_matrix = np.zeros((n_surveys, 3))
+    matrices = []
+
+    for i, survey in enumerate(student_surveys):
+        print(i, type(survey.content))
+        if survey.content:
+            print("THERE IS CONTENT")
+            matrix = generate_survey_matrix(survey.content)
+        else:
+            if i == 0:
+                print("NO CONTENT, FILL WITH ZEROS")
+                matrix = np.zeros((1, 26))  # Use zeros for the first survey
+            else:
+                print("NO CONTENT, USE PREVIOUS SURVEY")
+                matrix = np.copy(
+                    matrices[i - 1]
+                )  # Use a copy of previous survey's results
+
+        print("matrix-->", matrix)
+        matrices.append(np.copy(matrix))
+        print("matrices-->", matrices)
+        temp = extract_features(matrix)
+
+        survey_matrix[i, :] = temp
+
+    survey_matrix = survey_matrix.T  # Each row is a feature, each column is a survey
+
+    feature_keys = ["understanding", "stress", "content"]
+    response = {}
+
+    for i, feature in enumerate(feature_keys):
+        feature_data = survey_matrix[i, :]
+
+        response[feature] = feature_data.tolist()
+
+    serializer = FeatureSerializer(data=response)
+    serializer.is_valid(raise_exception=True)
+
+    return Response(response)
 
 
 @api_view(["GET"])

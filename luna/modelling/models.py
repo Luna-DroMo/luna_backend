@@ -5,6 +5,10 @@ from core.models import StudentUser, Module, StudentForm
 
 class SurveyResults(models.Model):
 
+    class Meta:
+        verbose_name = "Modelling Result"
+        verbose_name_plural = "Modelling Results"
+
     id = models.AutoField(primary_key=True)
     student = models.ForeignKey(StudentUser, on_delete=models.SET_NULL, null=True)
     module = models.ForeignKey(Module, on_delete=models.SET_NULL, null=True)

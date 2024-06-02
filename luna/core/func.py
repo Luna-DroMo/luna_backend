@@ -33,3 +33,15 @@ def merge_survey_with_form(survey, form):
     form_extended = np.broadcast_to(form, (survey.shape[0], form.shape[0]))
     result = np.concatenate((survey, form_extended), axis=1)
     return result
+
+
+def generate_survey_matrix(content):
+    if (
+        content
+        and isinstance(content, list)
+        and all(isinstance(i, dict) for i in content)
+    ):
+        matrix = [[item["value"] for item in content]]
+        return np.array(matrix)
+    else:
+        pass
