@@ -23,6 +23,9 @@ panas_loadings = np.array([[0.10120846, 0.        ],
        [0.        , 0.10186757]])
 
 
+# First column: Understanding
+# Second column: Stress
+# Third column: Content
 feature_loadings = np.array(
        [[ 0.        ,  0.        ,  0.16666667],
        [ 0.1       ,  0.        ,  0.16666667],
