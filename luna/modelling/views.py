@@ -2,12 +2,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .utils import run_model
 from rest_framework.response import Response
-from core.models import Module, StudentUser
+from core.models import Module, StudentUser, StudentSurvey
 from .models import SurveyResults
 from django.shortcuts import get_object_or_404
 from .serializers import Student_Module_Results_Serializer, Module_Results_Serializer
 from django.db.models import Avg, StdDev
-from rest_framework.renderers import JSONRenderer
+import json
+from core.func import generate_survey_matrix
 
 
 @api_view(["POST"])
@@ -22,6 +23,18 @@ def run(request):
 @api_view(["GET"])
 def get_student_module_modelling_results(request, student_id, module_id):
     module = get_object_or_404(Module, pk=module_id)
+    student_surveys = StudentSurvey.objects.filter(student=student_id, module=module)
+
+    if not student_surveys:
+        return Response({"error": "No survey data for this student."})
+
+    survey_matrix = []
+
+    for survey in student_surveys:
+        matrix = generate_survey_matrix(survey.content)
+        survey_matrix.append(matrix)
+
+    print("Survey matrix:", survey_matrix)
     module_results = SurveyResults.objects.filter(module=module, student=student_id)
     serializer = Student_Module_Results_Serializer(module_results, many=True)
 
