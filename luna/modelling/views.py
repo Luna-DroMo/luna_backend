@@ -31,16 +31,31 @@ def get_student_module_modelling_results(request, student_id, module_id):
 
     n_surveys = len(student_surveys)
     survey_matrix = np.zeros((n_surveys, 3))
+    matrices = []
 
     for i, survey in enumerate(student_surveys):
-        matrix = generate_survey_matrix(survey.content)
-        print("SURVEY MATRIX--> ", matrix, type(matrix))
+        print(i, type(survey.content))
+        if survey.content:
+            print("THERE IS CONTENT")
+            matrix = generate_survey_matrix(survey.content)
+        else:
+            if i == 0:
+                print("NO CONTENT, FILL WITH ZEROS")
+                matrix = np.zeros((1, 26))  # Use zeros for the first survey
+            else:
+                print("NO CONTENT, USE PREVIOUS SURVEY")
+                matrix = np.copy(
+                    matrices[i - 1]
+                )  # Use a copy of previous survey's results
+
+        print("matrix-->", matrix)
+        matrices.append(np.copy(matrix))
+        print("matrices-->", matrices)
         temp = extract_features(matrix)
-        print("EXTRACTED FEATURES--> ", temp, type(temp))
+
         survey_matrix[i, :] = temp
 
     survey_matrix = survey_matrix.T  # Each row is a feature, each column is a survey
-    print("Survey matrix:", survey_matrix, type(survey_matrix))
 
     feature_keys = ["understanding", "stress", "content"]
     response = {}
@@ -52,8 +67,6 @@ def get_student_module_modelling_results(request, student_id, module_id):
 
     serializer = FeatureSerializer(data=response)
     serializer.is_valid(raise_exception=True)
-
-    print("RESPONSE-->", response)
 
     return Response(response)
 

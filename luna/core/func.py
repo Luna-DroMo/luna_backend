@@ -44,5 +44,4 @@ def generate_survey_matrix(content):
         matrix = [[item["value"] for item in content]]
         return np.array(matrix)
     else:
-        print("Invalid content format.")
-        return np.zeros((1, 26))
+        pass
