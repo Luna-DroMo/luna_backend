@@ -1,6 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .utils import run_model
+from .utils import run_model, extract_features
 from rest_framework.response import Response
 from core.models import Module, StudentUser, StudentSurvey
 from .models import SurveyResults
@@ -9,6 +9,7 @@ from .serializers import Student_Module_Results_Serializer, Module_Results_Seria
 from django.db.models import Avg, StdDev
 import json
 from core.func import generate_survey_matrix
+import numpy as np
 
 
 @api_view(["POST"])
@@ -28,13 +29,16 @@ def get_student_module_modelling_results(request, student_id, module_id):
     if not student_surveys:
         return Response({"error": "No survey data for this student."})
 
-    survey_matrix = []
+    survey_matrix = np.array([])
 
     for survey in student_surveys:
         matrix = generate_survey_matrix(survey.content)
-        survey_matrix.append(matrix)
+        survey_matrix = np.append(survey_matrix, matrix)
 
-    print("Survey matrix:", survey_matrix)
+    print("Survey matrix:", survey_matrix, type(survey_matrix))
+    student_loadings = extract_features(survey_matrix)
+    print("Student loadings:", student_loadings)
+
     module_results = SurveyResults.objects.filter(module=module, student=student_id)
     serializer = Student_Module_Results_Serializer(module_results, many=True)
 

@@ -11,7 +11,7 @@ from core.func import (
     convert_form_dictionary,
     merge_survey_with_form,
 )
-from .form_loadings import panas_loadings
+from .form_loadings import panas_loadings, feature_loadings
 
 
 def run_model(student_id, module_id):
@@ -166,6 +166,18 @@ def process_form(content, student_form):
     except Exception as e:
         print("Error processing form:", str(e))
         return None
+
+
+def extract_features(survey_data: np.array) -> np.array:
+    """
+    Extracts select features from survey responses.
+    params: survey_data: matrix of survey data for 1 student, 1 module, multiple Time points
+    Returns: matrix of (timepoints x num_features)
+    """
+    # Scale survey data
+    survey_data[:, :-3] = survey_data[:, :-3] - np.full(survey_data[:, :-3].shape, 2.5)
+    features = survey_data @ feature_loadings
+    return features
 
 
 # ------------------------------------------------------------------
