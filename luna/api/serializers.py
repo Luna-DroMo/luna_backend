@@ -36,6 +36,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
 
 class ModuleSerializer(serializers.ModelSerializer):
     survey_end_date = serializers.SerializerMethodField()
+    next_survey_date = serializers.SerializerMethodField()
 
     class Meta:
         model = Module
@@ -61,6 +62,26 @@ class ModuleSerializer(serializers.ModelSerializer):
                     end_date = last_survey.created_at + timedelta(days=7)
                     print(f"Found last survey with end_date: {end_date}")
                     return end_date
+            except StudentSurvey.DoesNotExist:
+                print("No survey found")
+        return None
+
+    def get_next_survey_date(self, obj):
+        student_id = self.context.get("student_id")
+        if student_id:
+            try:
+                # Fetch the latest survey for the student and module
+                last_survey = StudentSurvey.objects.filter(
+                    student__user_id=student_id, module=obj
+                ).latest("created_at")
+
+                # If the last survey is not completed, return its end date
+                if last_survey.resolution != StudentSurvey.Resolution.COMPLETED:
+                    return last_survey.end_date
+
+                # If the last survey is completed, return created_at + 7 days
+                return last_survey.created_at + timedelta(days=7)
+
             except StudentSurvey.DoesNotExist:
                 print("No survey found")
         return None
