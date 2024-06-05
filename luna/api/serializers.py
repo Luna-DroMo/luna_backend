@@ -34,7 +34,6 @@ class StudentUserSerializer(serializers.ModelSerializer):
         return instance
 
 
-# This one is for module serializer. Since it has built-in support for create update, now no need to add them.
 class ModuleSerializer(serializers.ModelSerializer):
     survey_end_date = serializers.SerializerMethodField()
 
@@ -49,17 +48,19 @@ class ModuleSerializer(serializers.ModelSerializer):
                 f"Fetching last created survey for student_id: {student_id}, module_id: {obj.id}"
             )
             try:
+                # Fetch the latest survey for the student and module
                 last_survey = StudentSurvey.objects.filter(
                     student__user_id=student_id, module=obj
                 ).latest("created_at")
 
-                # Add 7 days to the created_at date
-                if last_survey.ResolutionStatus == "COMPLETED":
-                    end_date = None
+                # Check the resolution of the survey
+                if last_survey.resolution == StudentSurvey.Resolution.COMPLETED:
+                    print("Survey is completed, returning None")
+                    return None
                 else:
                     end_date = last_survey.created_at + timedelta(days=7)
-                print(f"Found last survey with end_date: {end_date}")
-                return end_date
+                    print(f"Found last survey with end_date: {end_date}")
+                    return end_date
             except StudentSurvey.DoesNotExist:
                 print("No survey found")
         return None

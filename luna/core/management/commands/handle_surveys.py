@@ -15,6 +15,8 @@ class Command(BaseCommand):
 
         try:
 
+            self.deactivate_expired_modules()
+
             # Archive surveys whose end_date is today
             self.archive_expired_surveys()
 
@@ -96,6 +98,20 @@ class Command(BaseCommand):
                 )
         except Exception as e:
             print(e)
+
+    def deactivate_expired_modules(self):
+        today = timezone.now().date()
+        expired_modules = Module.objects.filter(
+            end_date__lt=today, status=Module.Status.ACTIVE
+        )
+
+        if expired_modules.exists():
+            count = expired_modules.update(status=Module.Status.INACTIVE)
+            self.stdout.write(
+                self.style.SUCCESS(f"Deactivated {count} expired modules.")
+            )
+        else:
+            self.stdout.write(self.style.SUCCESS("No modules to deactivate."))
 
     def archive_expired_surveys(self):
         today = timezone.now().date()
