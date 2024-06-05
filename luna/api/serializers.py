@@ -54,7 +54,10 @@ class ModuleSerializer(serializers.ModelSerializer):
                 ).latest("created_at")
 
                 # Add 7 days to the created_at date
-                end_date = last_survey.created_at + timedelta(days=7)
+                if last_survey.ResolutionStatus == "COMPLETED":
+                    end_date = None
+                else:
+                    end_date = last_survey.created_at + timedelta(days=7)
                 print(f"Found last survey with end_date: {end_date}")
                 return end_date
             except StudentSurvey.DoesNotExist:
