@@ -13,4 +13,9 @@ urlpatterns = [
         views.get_module_modelling_results,
         name="get_module_modelling_results",
     ),
+    path(
+        "overview",
+        views.get_overview_modelling_results,
+        name="get_overview_modelling_results",
+    ),
 ]

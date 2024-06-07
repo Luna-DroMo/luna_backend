@@ -376,7 +376,7 @@ def enroll_module(request, student_id):
 @api_view(["GET"])
 def get_student_modules(request, student_id):
     student_modules = StudentModule.objects.filter(
-        student__user_id=student_id
+        student__user_id=student_id, module__status=Module.Status.ACTIVE
     ).select_related("module")
 
     modules = [sm.module for sm in student_modules]
@@ -456,7 +456,9 @@ def get_university_modules(request, student_id):
 def get_active_surveys(request, student_id):
     student = get_object_or_404(StudentUser, pk=student_id)
     surveys = StudentSurvey.objects.filter(
-        student=student, status=StudentSurvey.Status.ACTIVE
+        student=student,
+        status=StudentSurvey.Status.ACTIVE,
+        module__status=Module.Status.ACTIVE,
     )
     serializer = ActiveSurveySerializer(surveys, many=True)
     return Response(serializer.data)

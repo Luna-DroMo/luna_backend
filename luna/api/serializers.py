@@ -10,7 +10,7 @@ from core.models import (
     University,
     Faculty,
 )
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -34,9 +34,10 @@ class StudentUserSerializer(serializers.ModelSerializer):
         return instance
 
 
-# This one is for module serializer. Since it has built-in support for create update, now no need to add them.
 class ModuleSerializer(serializers.ModelSerializer):
     survey_end_date = serializers.SerializerMethodField()
+    next_survey_date = serializers.SerializerMethodField()
+    count_students = serializers.SerializerMethodField()
 
     class Meta:
         model = Module
@@ -45,14 +46,50 @@ class ModuleSerializer(serializers.ModelSerializer):
     def get_survey_end_date(self, obj):
         student_id = self.context.get("student_id")
         if student_id:
-            active_survey = StudentSurvey.objects.filter(
-                student__user_id=student_id,
-                module=obj,
-                status=StudentSurvey.Status.ACTIVE,
-            ).first()
-            if active_survey:
-                return active_survey.end_date
+            print(
+                f"Fetching last created survey for student_id: {student_id}, module_id: {obj.id}"
+            )
+            try:
+                # Fetch the latest survey for the student and module
+                last_survey = StudentSurvey.objects.filter(
+                    student__user_id=student_id, module=obj
+                ).latest("created_at")
+
+                # Check the resolution of the survey
+                if last_survey.resolution == StudentSurvey.Resolution.COMPLETED:
+                    print("Survey is completed, returning None")
+                    return None
+                else:
+                    end_date = last_survey.created_at + timedelta(days=7)
+                    print(f"Found last survey with end_date: {end_date}")
+                    return end_date
+            except StudentSurvey.DoesNotExist:
+                print("No survey found")
         return None
+
+    def get_next_survey_date(self, obj):
+        student_id = self.context.get("student_id")
+        if student_id:
+            try:
+                # Fetch the latest survey for the student and module
+                last_survey = StudentSurvey.objects.filter(
+                    student__user_id=student_id, module=obj
+                ).latest("created_at")
+
+                # If the last survey is not completed, return its end date
+                if last_survey.resolution != StudentSurvey.Resolution.COMPLETED:
+                    return last_survey.end_date
+
+                # If the last survey is completed, return created_at + 7 days
+                return last_survey.created_at + timedelta(days=7)
+
+            except StudentSurvey.DoesNotExist:
+                print("No survey found")
+        return None
+
+    def get_count_students(self, obj):
+        count_students = StudentModule.objects.filter(module=obj).count()
+        return count_students
 
 
 class LecturerModuleSerializer(serializers.ModelSerializer):

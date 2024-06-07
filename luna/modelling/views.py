@@ -5,7 +5,11 @@ from rest_framework.response import Response
 from core.models import Module, StudentUser, StudentSurvey
 from .models import SurveyResults
 from django.shortcuts import get_object_or_404
-from .serializers import FeatureSerializer, Module_Results_Serializer
+from .serializers import (
+    FeatureSerializer,
+    ModuleResultsSerializer,
+    OverviewResultsSerializer,
+)
 from django.db.models import Avg, StdDev
 import json
 from core.func import generate_survey_matrix
@@ -85,7 +89,7 @@ def get_module_modelling_results(request, module_id):
         )
         .order_by("SurveyNumber_T")
     )
-    serializer = Module_Results_Serializer(module_results, many=True)
+    serializer = ModuleResultsSerializer(module_results, many=True)
 
     students_high_risk = (
         SurveyResults.objects.filter(module=module, smoothed_output__gt=80)
@@ -98,3 +102,20 @@ def get_module_modelling_results(request, module_id):
     }
 
     return Response(response_data)
+
+
+@api_view(["GET"])
+def get_overview_modelling_results(request):
+    results = SurveyResults.objects.aggregate(
+        mean_smoothed_output=Avg("smoothed_output"),
+        std_smoothed_output=StdDev("smoothed_output"),
+    )
+
+    # Format the results as a single dictionary
+    formatted_results = {
+        "mean_smoothed_output": results["mean_smoothed_output"],
+        "std_smoothed_output": results["std_smoothed_output"],
+    }
+
+    serializer = OverviewResultsSerializer(formatted_results)
+    return Response(serializer.data)

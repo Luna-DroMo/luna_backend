@@ -8,7 +8,7 @@ class FeatureSerializer(serializers.Serializer):
     content = serializers.ListField(child=serializers.FloatField())
 
 
-class Module_Results_Serializer(serializers.Serializer):
+class ModuleResultsSerializer(serializers.Serializer):
     week = serializers.IntegerField(source="SurveyNumber_T")
     mean = serializers.FloatField(source="mean_smoothed_output")
     stdev = serializers.FloatField(source="std_smoothed_output")
@@ -27,3 +27,8 @@ class FormResultsSerializer(serializers.ModelSerializer):
                 "All items in results must be float or int."
             )
         return value
+
+
+class OverviewResultsSerializer(serializers.Serializer):
+    mean_smoothed_output = serializers.FloatField()
+    std_smoothed_output = serializers.FloatField()
