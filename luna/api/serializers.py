@@ -37,6 +37,7 @@ class StudentUserSerializer(serializers.ModelSerializer):
 class ModuleSerializer(serializers.ModelSerializer):
     survey_end_date = serializers.SerializerMethodField()
     next_survey_date = serializers.SerializerMethodField()
+    count_students = serializers.SerializerMethodField()
 
     class Meta:
         model = Module
@@ -85,6 +86,10 @@ class ModuleSerializer(serializers.ModelSerializer):
             except StudentSurvey.DoesNotExist:
                 print("No survey found")
         return None
+
+    def get_count_students(self, obj):
+        count_students = StudentModule.objects.filter(module=obj).count()
+        return count_students
 
 
 class LecturerModuleSerializer(serializers.ModelSerializer):
