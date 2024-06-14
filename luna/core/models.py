@@ -162,7 +162,7 @@ class Module(models.Model):
     start_date = models.DateField(null=False, default=timezone.now)
     end_date = models.DateField(null=False, default=timezone.now)
     created_at = models.DateTimeField(null=False, default=timezone.now)
-    survey_days = DayOfTheWeekField(null=True)
+    survey_days = DayOfTheWeekField(null=True, default='1')
 
     class Semester(models.TextChoices):
         WINTER = "WS", "Winter"
