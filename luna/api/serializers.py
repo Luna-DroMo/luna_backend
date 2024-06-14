@@ -10,7 +10,8 @@ from core.models import (
     University,
     Faculty,
 )
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+import datetime
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -93,6 +94,8 @@ class ModuleSerializer(serializers.ModelSerializer):
 
 
 class LecturerModuleSerializer(serializers.ModelSerializer):
+    current_survey_date = serializers.SerializerMethodField()
+    next_survey_date = serializers.SerializerMethodField()
 
     class Meta:
         model = Module
@@ -100,7 +103,31 @@ class LecturerModuleSerializer(serializers.ModelSerializer):
             "name",
             "code",
             "id",
+            "current_survey_date",
+            "next_survey_date",
         ]
+
+    def get_current_survey_date(self, obj):
+        today = date.today()
+        survey_day = int(obj.survey_days)  # Ensure survey_day is an integer
+        # Calculate the current survey date, adjusting if today is past the survey day
+        if today.weekday() >= survey_day:
+            current_survey_date = today - timedelta(days=(today.weekday() - survey_day))
+        else:
+            current_survey_date = today + timedelta(days=(survey_day - today.weekday()))
+        return current_survey_date
+
+    def get_next_survey_date(self, obj):
+        today = date.today()
+        survey_day = int(obj.survey_days)  # Ensure survey_day is an integer
+        # Calculate the next survey date, always in the future
+        if today.weekday() >= survey_day:
+            next_survey_date = today + timedelta(
+                days=(7 - (today.weekday() - survey_day))
+            )
+        else:
+            next_survey_date = today + timedelta(days=(survey_day - today.weekday()))
+        return next_survey_date
 
 
 class FormSerializer(serializers.ModelSerializer):
