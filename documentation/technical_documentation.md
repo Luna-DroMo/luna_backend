@@ -245,24 +245,14 @@ The application uses django-cron for scheduled tasks. Cronjobs are defined in th
   - Manage authentication settings
   - View and control scheduled tasks
 
-## Environment Variables
+## Maintanence topics
 
-The following environment variables are required for the application:
+### SSL Renewal
 
-### Database Configuration
+The Student Dropout Project uses TLS (commonly referred to as SSL) to establish a secure connection between the server and the client. TLS certificates have a set validity period (e.g., 90 days for Let's Encrypt). When a certificate expires, you can run the following code to renew it.
 
-```env
-PGHOST=<database_host>          # PostgreSQL host (default: localhost)
-PGNAME=<database_name>          # Database name
-PGUSER=<database_user>          # Database user
-PGPASSWORD=<database_password>  # Database password
-PGPORT=<database_port>          # Database port (default: 5432)
-```
-
-### Django Configuration
-
-```env
-DEBUG=<True/False>              # Debug mode (set False in production)
-DJANGO_SECRET_KEY=<secret_key>  # Django secret key
-ALLOWED_HOSTS=<hosts>           # Comma-separated list of allowed hosts
+```bash
+sudo systemctl stop nginx
+sudo certbot certonly --standalone -d mz-bdev.de -d mz-bdev.de
+sudo systemctl restart nginx
 ```
