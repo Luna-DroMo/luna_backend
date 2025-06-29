@@ -54,6 +54,70 @@ The application can be deployed using Docker:
 docker-compose up --build
 ```
 
+### Initial Setup with Docker
+
+#### 1. Create Superuser Account
+
+```bash
+# Create Django superuser inside the running container
+docker-compose exec web python manage.py createsuperuser
+```
+
+#### 2. Database Access & Configuration
+
+**Access PostgreSQL Database:**
+
+```bash
+# Connect to database container
+docker-compose exec db psql -U postgres
+
+# Or use external tools like DBeaver with these connection settings:
+# Host: localhost
+# Port: 5432
+# Database: postgres
+# Username: (from .env PGUSER)
+# Password: (from .env PGPASSWORD)
+```
+
+**Initial Data Setup:**
+
+```sql
+-- Connect to database and create initial university
+INSERT INTO core_university (id, name, created_at, updated_at)
+VALUES (1, 'University of Tübingen', NOW(), NOW());
+```
+
+#### 3. Access Admin Interface
+
+```bash
+# Navigate to admin portal
+http://localhost/admin
+```
+
+#### 4. Run Migrations
+
+```bash
+# Apply database migrations
+docker-compose exec web python manage.py migrate
+
+# Create new migrations (if models changed)
+docker-compose exec web python manage.py makemigrations
+```
+
+#### 5. Development Commands
+
+```bash
+# View container logs
+docker-compose logs web
+docker-compose logs db
+
+# Access container shell
+docker-compose exec web bash
+
+# Restart specific service
+docker-compose restart web
+```
+
 ## Admin Portal
 
 The application provides a Django admin interface for administrative tasks:

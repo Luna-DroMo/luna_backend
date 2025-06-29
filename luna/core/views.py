@@ -43,14 +43,7 @@ def login(request):
 def signup(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        user = User.objects.get(
-            email=request.data["email"],
-            user_type=request.data["user_type"],
-            first_name=request.data["first_name"],
-            last_name=request.data["last_name"],
-            university=request.data["university"],  # Comment out if cause any problem.
-        )
+        user = serializer.save()
         user.set_password(request.data["password"])
         user.save()
         token = Token.objects.create(user=user)
